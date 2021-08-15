@@ -23,6 +23,9 @@ class Responses(commands.Cog):
                 f"You forgot the channels argument, do it like `{ctx.prefix}rsetup #channel1 #channel2 ...`"
             )
 
+        for channel in channels:
+            self.bot.support_channels.add(channel.id)
+
         query = "INSERT INTO response_info (guild_id,valid_channel_ids,ignored_ids ,allow_all) VALUES ($1, $2, $3,$4)"
         await self.bot.db.execute(query, ctx.guild.id, [channel.id for channel in channels], [], True)
         await ctx.send(f"Auto-response setup successful.\n\nUse `{ctx.prefix}rcreate` to create responses.")
