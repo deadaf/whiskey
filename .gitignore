@@ -1,0 +1,6 @@
+__pycache__/
+.vscode
+*.py[cod]
+.venv/*
+config.py
+*.log
