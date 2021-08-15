@@ -18,6 +18,7 @@ class Responses(commands.Cog):
     @commands.command()
     @has_not_done_setup()
     async def rsetup(self, ctx, *channels: TextChannel):
+        """setup auto response"""
         if not channels:
             return await ctx.send(
                 f"You forgot the channels argument, do it like `{ctx.prefix}rsetup #channel1 #channel2 ...`"
@@ -33,6 +34,8 @@ class Responses(commands.Cog):
     @commands.command()
     @has_done_setup()
     async def rcreate(self, ctx):
+        """create a smart auto response"""
+
         def check(msg):
             return msg.author == ctx.author and ctx.channel == msg.channel
 
@@ -59,6 +62,7 @@ class Responses(commands.Cog):
     @commands.command()
     @has_done_setup()
     async def rperm(self, ctx):
+        """allow/deny everyone to create responses"""
         record = await Response.get(pk=ctx.guild.id)
         await Response.filter(pk=ctx.guild.id).update(allow_all=not record.allow_all)
         if not record.allow_all:
@@ -79,6 +83,7 @@ class Responses(commands.Cog):
     @commands.command()
     @has_done_setup()
     async def rchannel(self, ctx, *, channel: TextChannel):
+        """add or remove a channel to valid support channels"""
 
         record = await Response.get(pk=ctx.guild.id)
         func = (ArrayAppend, ArrayRemove)[channel.id in record.valid_channel_ids]
@@ -93,6 +98,7 @@ class Responses(commands.Cog):
     @commands.command()
     @has_done_setup()
     async def rignore(self, ctx, member_or_role: typing.Union[Member, Role]):
+        """ignore a member or role in support channel"""
         id = member_or_role.id
 
         record = await Response.get(pk=ctx.guild.id)
