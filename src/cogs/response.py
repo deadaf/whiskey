@@ -78,8 +78,17 @@ class Responses(commands.Cog):
 
     @commands.command()
     @has_done_setup()
-    async def rchannel(self, ctx):
-        pass
+    async def rchannel(self, ctx, *, channel: TextChannel):
+
+        record = await Response.get(pk=ctx.guild.id)
+        func = (ArrayAppend, ArrayRemove)[channel.id in record.valid_channel_ids]
+        await Response.filter(pk=ctx.guild.id).update(valid_channel_ids=func("valid_channel_ids", channel.id))
+        if channel.id in record.valid_channel_ids:
+            self.bot.support_channels.discard(channel.id)
+            return await ctx.send(f"{channel.mention} is no longer a response channel.")
+
+        self.bot.support_channels.add(channel.id)
+        return await ctx.send(f"{channel.mention} added to response channel.")
 
     @commands.command()
     @has_done_setup()
