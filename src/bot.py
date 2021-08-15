@@ -73,7 +73,7 @@ class Whiskey(commands.Bot):
             model.bot = self
 
     async def on_ready(self):
-        print(f"Ragnarok is coming..")
+        print(f"Ragnarok is coming...")
 
     async def close(self):
         await super().close()
