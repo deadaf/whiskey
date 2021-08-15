@@ -14,5 +14,5 @@ def response_ignore_check(member: Member, ignored: list):
 
 
 def get_best_match(keywords: list, sentence: str):
-    matches = gcm(sentence, keywords, cutoff=0.4)
+    matches = gcm(sentence, keywords, cutoff=0.5)
     return matches[0] if matches else None

@@ -5,9 +5,9 @@ import typing
 if typing.TYPE_CHECKING:
     from bot import Whiskey
 
-from discord import TextChannel
+from discord import TextChannel, Member, Role
 from discord.ext import commands
-from models import Response, ResponseData
+from models import Response, ResponseData, ArrayAppend, ArrayRemove
 from .utils import has_not_done_setup, has_done_setup, string_input, truncate_string
 
 
@@ -83,8 +83,16 @@ class Responses(commands.Cog):
 
     @commands.command()
     @has_done_setup()
-    async def rignore(self, ctx):
-        pass
+    async def rignore(self, ctx, member_or_role: typing.Union[Member, Role]):
+        id = member_or_role.id
+
+        record = await Response.get(pk=ctx.guild.id)
+        func = (ArrayAppend, ArrayRemove)[id in record.ignored_ids]
+        await Response.filter(pk=ctx.guild.id).update(ignored_ids=func("ignored_ids", id))
+        if id in record.ignored_ids:
+            return await ctx.send(f"{member_or_role.mention} is no longer ignored")
+
+        return await ctx.send(f"{member_or_role.mention} will be ignored")
 
 
 def setup(bot):

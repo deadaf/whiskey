@@ -10,13 +10,6 @@ from async_property import async_property
 from discord.ext import commands
 
 from discord.ext.commands.errors import (
-    BadArgument,
-    BotMissingPermissions,
-    CheckFailure,
-    CommandOnCooldown,
-    MissingPermissions,
-    MissingRequiredArgument,
-    NoPrivateMessage,
     CommandNotFound,
 )
 
@@ -100,25 +93,10 @@ class Whiskey(commands.Bot):
             return _result
 
     async def on_command_error(self, ctx, error):
-        sendable = (
-            BadArgument,
-            NoPrivateMessage,
-            MissingPermissions,
-            MissingRequiredArgument,
-            BotMissingPermissions,
-            CommandOnCooldown,
-            CheckFailure,
-        )
-
         ignorable = (CommandNotFound,)
 
-        if isinstance(error, sendable):
+        if not isinstance(error, ignorable):
             return await ctx.send(error)
-
-        if isinstance(error, ignorable):
-            return
-
-        raise error
 
 
 if __name__ == "__main__":
