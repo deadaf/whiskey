@@ -58,8 +58,10 @@ class WhiskeyEvents(commands.Cog):
             return
 
         guild_keywords = await get_guild_keywords(message.guild.id)
+        print(guild_keywords)
 
         keyword = get_best_match(guild_keywords, message.content)
+        print(keyword)
         if not keyword:
             return
 
