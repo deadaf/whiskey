@@ -36,6 +36,11 @@ class Utility(Cog):
         """get a link to my server"""
         await ctx.send("https://discord.gg/aBM5xz6")
 
+    @command()
+    async def source(self, ctx: Context):
+        """yes, I am open-souce"""
+        await ctx.send("https://github.com/deadaf/whiskey")
+
 
 def setup(bot):
     bot.add_cog(Utility(bot))
