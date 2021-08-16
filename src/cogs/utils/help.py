@@ -29,9 +29,7 @@ class HelpCommand(commands.HelpCommand):
                 value=", ".join(map(lambda x: f"`{x}`", idx.get_commands())),
             )
 
-        cmds = sum(1 for i in self.context.bot.walk_commands())
-
-        embed.set_footer(text="Total Commands: {}".format(cmds))
+        embed.set_footer(text="discord.gg/quotient")
         await ctx.send(embed=embed)
 
     async def command_not_found(self, string: str):
