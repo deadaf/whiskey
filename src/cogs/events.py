@@ -11,8 +11,7 @@ if typing.TYPE_CHECKING:
 
 
 from discord.ext import commands
-from models import ResponseData, Voice, Response
-from contextlib import suppress
+from models import ResponseData, Response
 
 import discord
 from constants import COLOR
@@ -23,20 +22,9 @@ from .utils import response_ignore_check
 class WhiskeyEvents(commands.Cog):
     def __init__(self, bot: Whiskey):
         self.bot = bot
-        self.bot.loop.create_task(self.join_vcs())
         self.bot.loop.create_task(self.fill_support_channels())
 
         self.reactions = ("👍", "👎")
-
-    async def join_vcs(self):
-        await self.bot.wait_until_ready()
-        async for record in Voice.all():
-            guild = await self.bot.getch(self.bot.get_guild, self.bot.fetch_guild, record.guild_id)
-            if not guild.chunked:
-                self.bot.loop.create_task(guild.chunk())
-
-            with suppress(discord.Forbidden, discord.ClientException, AttributeError):
-                await guild.get_channel(record.voice_channel_id).connect()
 
     async def fill_support_channels(self):
         await self.bot.wait_until_ready()

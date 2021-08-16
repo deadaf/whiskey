@@ -33,11 +33,3 @@ class ResponseData(models.Model):
     downvote = fields.IntField(default=0)
     author_id = fields.BigIntField()
     created_at = fields.DatetimeField(auto_now=True)
-
-
-class Voice(models.Model):
-    class Meta:
-        table = "voice"
-
-    guild_id = fields.BigIntField(pk=True)
-    voice_channel_id = fields.BigIntField()
