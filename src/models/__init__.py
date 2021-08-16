@@ -1,6 +1,8 @@
+import async_property
 from .fields import *
 from .functions import *
 from tortoise import models, fields
+from async_property import async_property
 
 
 class Response(models.Model):
@@ -12,6 +14,11 @@ class Response(models.Model):
     ignored_ids = ArrayField(fields.BigIntField(), default=list)
     allow_all = fields.BooleanField(default=True)
     data: fields.ManyToManyRelation["ResponseData"] = fields.ManyToManyField("models.ResponseData", index=True)
+
+    @property
+    def valid_channels(self):
+        channels = map(self.bot.get_channel, self.valid_channel_ids)
+        return (getattr(channel, "mention", "deleted-channel") for channel in channels)
 
 
 class ResponseData(models.Model):

@@ -26,7 +26,7 @@ class Whiskey(commands.Bot):
             strip_after_prefix=True,
             case_insensitive=True,
             intents=discord.Intents.all(),
-            allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, replied_user=False, users=True),
+            allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, replied_user=False, users=False),
             activity=discord.Activity(type=discord.ActivityType.watching, name="Are you drunk?"),
             **kwargs,
         )

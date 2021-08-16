@@ -5,7 +5,8 @@ import typing
 if typing.TYPE_CHECKING:
     from bot import Whiskey
 
-from discord import TextChannel, Member, Role
+from constants import COLOR
+from discord import TextChannel, Member, Role, Embed
 from discord.ext import commands
 from models import Response, ResponseData, ArrayAppend, ArrayRemove
 from .utils import has_not_done_setup, has_done_setup, string_input, truncate_string
@@ -16,6 +17,7 @@ class Responses(commands.Cog):
         self.bot = bot
 
     @commands.command()
+    @commands.has_permissions(manage_guild=True)
     @has_not_done_setup()
     async def rsetup(self, ctx, *channels: TextChannel):
         """setup auto response"""
@@ -60,6 +62,7 @@ class Responses(commands.Cog):
         )
 
     @commands.command()
+    @commands.has_permissions(manage_guild=True)
     @has_done_setup()
     async def rperm(self, ctx):
         """allow/deny everyone to create responses"""
@@ -71,16 +74,19 @@ class Responses(commands.Cog):
         return await ctx.send("From now on, people need manage_server permissions to create auto responses")
 
     @commands.command()
+    @commands.has_permissions(manage_guild=True)
     @has_done_setup()
     async def rlist(self, ctx):
         await ctx.send("in development")
 
     @commands.command()
+    @commands.has_permissions(manage_guild=True)
     @has_done_setup()
     async def rdelete(self, ctx):
         pass
 
     @commands.command()
+    @commands.has_permissions(manage_guild=True)
     @has_done_setup()
     async def rchannel(self, ctx, *, channel: TextChannel):
         """add or remove a channel to valid support channels"""
@@ -96,6 +102,7 @@ class Responses(commands.Cog):
         return await ctx.send(f"{channel.mention} added to response channel.")
 
     @commands.command()
+    @commands.has_permissions(manage_guild=True)
     @has_done_setup()
     async def rignore(self, ctx, member_or_role: typing.Union[Member, Role]):
         """ignore a member or role in support channel"""
@@ -108,6 +115,28 @@ class Responses(commands.Cog):
             return await ctx.send(f"{member_or_role.mention} is no longer ignored")
 
         return await ctx.send(f"{member_or_role.mention} will be ignored")
+
+    @commands.command()
+    @has_done_setup()
+    @commands.bot_has_permissions(embed_links=True)
+    async def rconfig(self, ctx):
+        """Get current server's smart response config"""
+
+        record = await Response.get(pk=ctx.guild.id)
+
+        _list = []
+        for idx in record.ignored_ids:
+            val = self.bot.get_user(idx) or ctx.guild.get_role(idx)
+            _list.append(getattr(val, "mention", "unknown"))
+
+        embed = Embed(color=COLOR, title="Smart-Response config")
+        if record.valid_channel_ids:
+            embed.add_field(name="Channels", value=", ".join(record.valid_channels))
+
+        embed.add_field(name="Allow everyone to create", value=record.allow_all)
+        if _list:
+            embed.add_field(name="Ignored", value=", ".join(_list), inline=False)
+        await ctx.send(embed=embed)
 
 
 def setup(bot):
