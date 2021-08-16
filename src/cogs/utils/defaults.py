@@ -30,3 +30,11 @@ def get_best_match(keywords: list, sentence: str):
         _list.append(Match(match, sequence_match))
 
     return sorted(_list, key=lambda x: x.confidence, reverse=True)
+
+
+async def aenumerate(asequence, start=1):
+    """Asynchronously enumerate an async iterator from a given start value"""
+    n = start
+    async for elem in asequence:
+        yield n, elem
+        n += 1

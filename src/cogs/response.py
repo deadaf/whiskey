@@ -9,7 +9,7 @@ from constants import COLOR
 from discord import TextChannel, Member, Role, Embed
 from discord.ext import commands
 from models import Response, ResponseData, ArrayAppend, ArrayRemove
-from .utils import has_not_done_setup, has_done_setup, string_input, truncate_string
+from .utils import has_not_done_setup, has_done_setup, string_input, truncate_string, aenumerate, Pages
 
 
 class Responses(commands.Cog):
@@ -77,13 +77,29 @@ class Responses(commands.Cog):
     @commands.has_permissions(manage_guild=True)
     @has_done_setup()
     async def rlist(self, ctx):
-        await ctx.send("in development")
+        """list of all response this server has"""
+        main_record = await Response.get(pk=ctx.guild.id)
+
+        _list = []
+        async for idx, record in aenumerate(main_record.data.all()):
+            keywords = ", ".join(record.keywords)
+            _list.append(f"`{idx:02}` {truncate_string(keywords, 50)} (ID: {record.id})\n")
+
+        paginator = Pages(ctx, title=f"Total Response: {len(_list)}", entries=_list, per_page=10, show_entry_count=True)
+        await paginator.paginate()
 
     @commands.command()
     @commands.has_permissions(manage_guild=True)
     @has_done_setup()
-    async def rdelete(self, ctx):
-        pass
+    async def rdelete(self, ctx, response_id: int):
+        """delete a smart response"""
+        main_record = await Response.get(pk=ctx.guild.id)
+        res = await main_record.data.filter(pk=response_id).first()
+        if not res:
+            return await ctx.send("response id is invalid")
+
+        await ResponseData.filter(pk=res.id).delete()
+        await ctx.send("done")
 
     @commands.command()
     @commands.has_permissions(manage_guild=True)
