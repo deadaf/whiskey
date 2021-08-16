@@ -35,6 +35,7 @@ class Responses(commands.Cog):
 
     @commands.command()
     @has_done_setup()
+    @commands.bot_has_guild_permissions(manage_messages=True, embed_links=True, add_reactions=True)
     async def rcreate(self, ctx):
         """create a smart auto response"""
 
@@ -49,11 +50,20 @@ class Responses(commands.Cog):
         keywords = await string_input(ctx, check)
 
         keywords = keywords.strip().split(",")
-        keywords = [k.strip() for k in keywords if not len(k) >= 50]
+        keywords = [k.strip() for k in keywords if not len(k) >= 100]
+
+        cmds = [cmd.qualified_name for cmd in self.bot.walk_commands()]
+
+        for keyword in keywords:
+            if bool(await record.data.filter(keywords__icontains=keyword)):
+                return await ctx.send(f"There is already a keyword with name `{keyword}`")
+
+            if keyword in cmds:
+                return await ctx.send(f"`{keyword}` is a reserved keyword.")
 
         await ctx.send("What should be the response for those keywords?")
         response = await string_input(ctx, check)
-        response = truncate_string(response, 2000)
+        response = truncate_string(response, 3080)
 
         res = await ResponseData.create(keywords=keywords, content=response, author_id=ctx.author.id)
         await record.data.add(res)
@@ -74,7 +84,6 @@ class Responses(commands.Cog):
         return await ctx.send("From now on, people need manage_server permissions to create auto responses")
 
     @commands.command()
-    @commands.has_permissions(manage_guild=True)
     @has_done_setup()
     async def rlist(self, ctx):
         """list of all response this server has"""
