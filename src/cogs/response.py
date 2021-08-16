@@ -113,6 +113,23 @@ class Responses(commands.Cog):
     @commands.command()
     @commands.has_permissions(manage_guild=True)
     @has_done_setup()
+    async def rstats(self, ctx, response_id: int):
+        """stats of a response"""
+        main_record = await Response.get(pk=ctx.guild.id)
+        res = await main_record.data.filter(pk=response_id).first()
+        if not res:
+            return await ctx.send("response id is invalid")
+
+        embed = Embed(
+            color=COLOR,
+            description=f"This response was written by {res.author} <t:{int(res.created_at.timestamp())}:R> \nIt has been used {res.uses} times",
+        )
+        embed.set_footer(text=f"👍: {res.upvote}   👎: {res.downvote}")
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    @commands.has_permissions(manage_guild=True)
+    @has_done_setup()
     async def rchannel(self, ctx, *, channel: TextChannel):
         """add or remove a channel to valid support channels"""
 

@@ -31,3 +31,7 @@ class ResponseData(models.Model):
     downvote = fields.IntField(default=0)
     author_id = fields.BigIntField()
     created_at = fields.DatetimeField(auto_now=True)
+
+    @property
+    def author(self):
+        return self.bot.get_user(self.author_id)
