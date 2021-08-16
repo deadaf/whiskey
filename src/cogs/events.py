@@ -59,15 +59,17 @@ class WhiskeyEvents(commands.Cog):
 
         guild_keywords = await get_guild_keywords(message.guild.id)
 
-        keyword = get_best_match(guild_keywords, message.content)
-        if not keyword:
+        matches = get_best_match(guild_keywords, message.content)
+        if not matches:
             return
 
-        response = await record.data.filter(keywords__icontains=keyword).first()
-        with suppress(discord.Forbidden, AttributeError):
-            author = await self.bot.getch(self.bot.get_user, self.bot.fetch_user, response.author_id)
+        await message.channel.send(matches)
 
-            await message.reply(f"{response.content}\n\n- {author}")
+        # response = await record.data.filter(keywords__icontains=keyword).first()
+        # with suppress(discord.Forbidden, AttributeError):
+        #     author = await self.bot.getch(self.bot.get_user, self.bot.fetch_user, response.author_id)
+
+        #     await message.reply(f"{response.content}\n\n- {author}")
 
 
 def setup(bot):
