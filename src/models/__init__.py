@@ -22,6 +22,8 @@ class ResponseData(models.Model):
     keywords = ArrayField(fields.CharField(max_length=100))
     content = fields.TextField()
     uses = fields.IntField(default=0)
+    upvote = fields.IntField(default=0)
+    downvote = fields.IntField(default=0)
     author_id = fields.BigIntField()
     created_at = fields.DatetimeField(auto_now=True)
 
