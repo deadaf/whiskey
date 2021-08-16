@@ -1,8 +1,6 @@
-import async_property
 from .fields import *
 from .functions import *
 from tortoise import models, fields
-from async_property import async_property
 
 
 class Response(models.Model):
