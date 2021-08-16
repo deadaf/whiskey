@@ -205,12 +205,12 @@ class Utility(Cog):
     @command()
     async def server(self, ctx: Context):
         """get a link to my server"""
-        await ctx.send("https://discord.gg/aBM5xz6")
+        await ctx.send("discord.gg/aBM5xz6")
 
     @command()
     async def source(self, ctx: Context):
         """yes, I am open-souce"""
-        await ctx.send("https://github.com/deadaf/whiskey")
+        await ctx.send("<https://github.com/deadaf/whiskey>")
 
     @command()
     async def stats(self, ctx: Context):
