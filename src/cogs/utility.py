@@ -41,6 +41,10 @@ class Utility(Cog):
         """yes, I am open-souce"""
         await ctx.send("https://github.com/deadaf/whiskey")
 
+    @command()
+    async def stats(self, ctx: Context):
+        await ctx.send(f"Servers: {len(self.bot.guilds)}\nUsers: {sum(g.member_count for g in self.bot.guilds)}")
+
 
 def setup(bot):
     bot.add_cog(Utility(bot))
