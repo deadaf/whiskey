@@ -1,4 +1,5 @@
 from __future__ import annotations
+import asyncio
 
 import typing
 
@@ -10,10 +11,11 @@ if typing.TYPE_CHECKING:
 
 
 from discord.ext import commands
-from models import Voice, Response
+from models import ResponseData, Voice, Response
 from contextlib import suppress
 
 import discord
+from constants import COLOR
 
 from .utils import response_ignore_check
 
@@ -23,6 +25,8 @@ class WhiskeyEvents(commands.Cog):
         self.bot = bot
         self.bot.loop.create_task(self.join_vcs())
         self.bot.loop.create_task(self.fill_support_channels())
+
+        self.reactions = ("👍", "👎")
 
     async def join_vcs(self):
         await self.bot.wait_until_ready()
@@ -63,13 +67,40 @@ class WhiskeyEvents(commands.Cog):
         if not matches:
             return
 
-        await message.channel.send(matches)
+        match = matches[0]
 
-        # response = await record.data.filter(keywords__icontains=keyword).first()
-        # with suppress(discord.Forbidden, AttributeError):
-        #     author = await self.bot.getch(self.bot.get_user, self.bot.fetch_user, response.author_id)
+        if match.confidence >= 70:
+            response = await record.data.filter(keywords__icontains=match.keyword).first()
+            embed = discord.Embed(color=COLOR, description=response.content)
+            embed.set_footer(text=f"Confidence: {match.confidence:.01f} ● 👍 {response.upvote} 👎 {response.downvote}")
+            msg = await message.reply(embed=embed)
 
-        #     await message.reply(f"{response.content}\n\n- {author}")
+            for reaction in self.reactions:
+                await msg.add_reaction(reaction)
+
+            upvote, downvote = 0, 0
+            try:
+                react, user = await self.bot.wait_for(
+                    "reaction_add",
+                    check=lambda r, u: r.emoji in self.reactions and u.id == message.author.id and r.message.id == msg.id,
+                    timeout=30,
+                )
+
+            except asyncio.TimeoutError:
+                await msg.clear_reactions()
+                return await ResponseData.filter(pk=response.id).update(uses=response.uses + 1)
+
+            else:
+                if str(react.emoji) == self.reactions[0]:
+                    upvote = 1
+
+                elif str(react.emoji) == self.reactions[1]:
+                    downvote = 1
+
+            await msg.clear_reactions()
+            await ResponseData.filter(pk=response.id).update(
+                upvote=response.upvote + upvote, downvote=response.downvote + downvote, uses=response.uses + 1
+            )
 
 
 def setup(bot):

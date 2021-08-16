@@ -5,7 +5,7 @@ from difflib import get_close_matches as GCM, SequenceMatcher as SM
 
 class Match(NamedTuple):
     keyword: str
-    ratio: float
+    confidence: float
 
 
 def response_ignore_check(member: Member, ignored: list):
@@ -29,4 +29,4 @@ def get_best_match(keywords: list, sentence: str):
         sequence_match = SM(None, match, sentence).ratio() * 100
         _list.append(Match(match, sequence_match))
 
-    return sorted(_list, key=lambda x: x.ratio, reverse=True)
+    return sorted(_list, key=lambda x: x.confidence, reverse=True)
