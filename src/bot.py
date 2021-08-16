@@ -6,6 +6,7 @@ import discord
 from tortoise import Tortoise
 import config, cogs
 
+from cogs.utils import HelpCommand
 from async_property import async_property
 from discord.ext import commands
 
@@ -26,10 +27,12 @@ class Whiskey(commands.Bot):
             strip_after_prefix=True,
             case_insensitive=True,
             intents=discord.Intents.all(),
+            help_command=HelpCommand(),
             allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, replied_user=False, users=False),
             activity=discord.Activity(type=discord.ActivityType.playing, name="Are you drunk?"),
             **kwargs,
         )
+        self._BotBase__cogs = commands.core._CaseInsensitiveDict()
 
         for cog in cogs.__loadable__:
             self.load_extension(cog)
@@ -38,8 +41,6 @@ class Whiskey(commands.Bot):
 
         asyncio.get_event_loop().run_until_complete(self.init_whiskey())
         self.loop = asyncio.get_event_loop()
-
-        self._BotBase__cogs = commands.core._CaseInsensitiveDict()
 
         self.support_channels = set()
 
