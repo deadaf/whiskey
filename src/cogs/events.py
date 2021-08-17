@@ -2,6 +2,7 @@ from __future__ import annotations
 import asyncio
 
 import typing
+import re
 
 from cogs.utils.cache import get_guild_keywords
 from cogs.utils.defaults import get_best_match
@@ -51,7 +52,7 @@ class WhiskeyEvents(commands.Cog):
 
         guild_keywords = await get_guild_keywords(message.guild.id)
 
-        matches = get_best_match(guild_keywords, message.content)
+        matches = get_best_match(guild_keywords, re.sub(r"<@*#*!*&*\d+>|[^\w\s]", "", message.content))
         if not matches:
             return
 
