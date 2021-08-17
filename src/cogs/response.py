@@ -62,7 +62,7 @@ class Responses(commands.Cog):
                 return await ctx.send(f"`{keyword}` is a reserved keyword.")
 
         await ctx.send("What should be the response for those keywords?")
-        response = await string_input(ctx, check)
+        response = await string_input(ctx, check, timeout=300)
         response = truncate_string(response, 3080)
 
         res = await ResponseData.create(keywords=keywords, content=response, author_id=ctx.author.id)
@@ -90,7 +90,7 @@ class Responses(commands.Cog):
         main_record = await Response.get(pk=ctx.guild.id)
 
         _list = []
-        async for idx, record in aenumerate(main_record.data.all()):
+        async for idx, record in aenumerate(main_record.data.all().order_by("id")):
             keywords = ", ".join(record.keywords)
             _list.append(f"`{idx:02}` {truncate_string(keywords, 50)} (ID: {record.id})\n")
 
