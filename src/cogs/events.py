@@ -58,7 +58,7 @@ class WhiskeyEvents(commands.Cog):
 
         match = matches[0]
 
-        if match.confidence >= 65:
+        if match.confidence >= 68.5:
             response = await record.data.filter(keywords__icontains=match.keyword).first()
             embed = discord.Embed(color=COLOR, description=response.content)
             embed.set_footer(text=f"Confidence: {match.confidence:.01f} ● 👍 {response.upvote} 👎 {response.downvote}")
