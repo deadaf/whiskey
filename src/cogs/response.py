@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import typing
+from cogs.utils import inputs
 
 if typing.TYPE_CHECKING:
     from bot import Whiskey
@@ -124,6 +125,7 @@ class Responses(commands.Cog):
             color=COLOR,
             description=f"This response was written by {res.author} <t:{int(res.created_at.timestamp())}:R> \nIt has been used {res.uses} times",
         )
+        embed.add_field(name="keywords", value="\n".join(res.keywords))
         embed.set_footer(text=f"👍: {res.upvote}   👎: {res.downvote}")
         await ctx.send(embed=embed)
 
@@ -179,6 +181,56 @@ class Responses(commands.Cog):
         if _list:
             embed.add_field(name="Ignored", value=", ".join(_list), inline=False)
         await ctx.send(embed=embed)
+
+    @commands.command()
+    @commands.has_permissions(manage_guild=True)
+    @has_done_setup()
+    async def redit(self, ctx, response_id: int, option: str = None):
+        """edit a response content or keywords"""
+        main_record = await Response.get(pk=ctx.guild.id)
+        res = await main_record.data.filter(pk=response_id).first()
+        if not res:
+            return await ctx.send("response id is invalid")
+
+        if not option or option.lower() not in ("keyword", "content"):
+            return await ctx.send("pls enter a valid option. It can be `keyword` or `content`")
+
+        def check(msg):
+            return msg.author == ctx.author and ctx.channel == msg.channel
+
+        if option.lower() == "keyword":
+            await ctx.send(
+                f"please enter the new keywords to append or remove from id:{response_id}, separate them with comman(,)"
+            )
+
+            keywords = await string_input(ctx, check=check)
+
+            keywords = keywords.strip().split(",")
+            keywords = [k.strip() for k in keywords if not len(k) >= 100]
+
+            cmds = [cmd.qualified_name for cmd in self.bot.walk_commands()]
+
+            valid_keywords = set()
+
+            for keyword in keywords:
+                if not bool(await main_record.data.filter(keywords__icontains=keyword)) and not keyword in cmds:
+                    if keyword in res.keywords[:]:
+                        res.remove(keyword)
+                    else:
+                        valid_keywords.add(keyword)
+
+            valid_keywords.update(set(res.keywords))
+            query = "UPDATE response_data SET keywords = $1 WHERE id = $2"
+            await self.bot.db.execute(query, valid_keywords, res.id)
+            await ctx.send("keywords updated.")
+
+        else:
+            await ctx.send("please enter the new content for the smart response.")
+
+            content = await string_input(ctx, check=check, timeout=300)
+            content = truncate_string(content, 3080)
+            await self.bot.db.execute("UPDATE response_data SET content = $1 WHERE id = $2", content, res.id)
+            await ctx.send("content updated.")
 
 
 def setup(bot):
