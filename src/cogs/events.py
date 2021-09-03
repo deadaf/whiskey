@@ -33,8 +33,22 @@ class WhiskeyEvents(commands.Cog):
             for channel_id in record.valid_channel_ids:
                 self.bot.support_channels.add(channel_id)
 
-    @commands.Cog.listener()
-    async def on_message(self, message: discord.Message):
+    @commands.Cog.listener(name="on_message")
+    async def on_suggestion(self, message: discord.Message):
+        if not message.guild or message.author.bot:
+            return
+
+        if not message.channel.id == 849845209126535188:
+            return
+
+        if any(i in (874328457167929386, 829940691500269588) for i in (role.id for role in message.author.roles)):
+            return
+
+        await message.add_reaction("✅")
+        await message.add_reaction("❌")
+
+    @commands.Cog.listener(name="on_message")
+    async def on_smart_response(self, message: discord.Message):
         if not message.guild or message.author.bot or not message.content:
             return
 
