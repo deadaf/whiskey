@@ -26,7 +26,7 @@ class HelpCommand(commands.HelpCommand):
             embed.add_field(
                 inline=False,
                 name=idx.qualified_name.title(),
-                value=", ".join(map(lambda x: f"`{x}`", idx.get_commands())),
+                value=", ".join(map(lambda x: f"`{x}`", filter(lambda x: not x.hidden, idx.get_commands()))),
             )
 
         embed.set_footer(text="discord.gg/quotient")

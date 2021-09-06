@@ -14,8 +14,9 @@ import os
 import zlib
 import discord
 
+from .views import SelfRoles
 from .utils import fuzzy
-from discord.ext.commands import command, Context, Cog, group
+from discord.ext.commands import command, Context, Cog, group, is_owner
 
 
 # https://github.com/Rapptz/RoboDanny/blob/rewrite/cogs/api.py
@@ -232,6 +233,32 @@ class Utility(Cog):
         if len(msg) > 2000:
             return await ctx.send("Output too long to display.")
         await ctx.send(msg)
+
+    @command(hidden=True)
+    @is_owner()
+    async def selfroles(self, ctx):
+        embed = discord.Embed(color=COLOR, title="Claim Self-Roles")
+        embed.description = "Below is a list of self claimable roles along with the purpose they serve. We promise, we won't ping you unless it's really important."
+        embed.add_field(
+            name="**1. Quotient-Updates 🔔**",
+            value="We will ping this role everytime we time we deploy an important update in <@746348747918934096>. *we try not to overdo it.*",
+            inline=False,
+        )
+        embed.add_field(
+            name="**2. Events(giveaways) 🎉**",
+            value="This role will be mentioned when we host a new event or giveaway. (*giveaway most of the times*)",
+            inline=False,
+        )
+        embed.add_field(
+            name="**3. Black 🖊️**", value="Claim this if you want to look BLACK. (no racism pls)", inline=False
+        )
+        embed.add_field(
+            name="**4. Discord Status 🍻**",
+            value="Everytime discord gets drunk or shows unexpected behaviour, this role will be notified. (*we really recommend you to take this*)",
+            inline=False,
+        )
+        await ctx.message.delete()
+        await ctx.send(embed=embed, view=SelfRoles())
 
 
 def setup(bot):

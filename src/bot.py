@@ -34,6 +34,8 @@ class Whiskey(commands.Bot):
         )
         self._BotBase__cogs = commands.core._CaseInsensitiveDict()
 
+        self.persistent_views_added = False
+
         for cog in cogs.__loadable__:
             self.load_extension(cog)
 
@@ -67,6 +69,13 @@ class Whiskey(commands.Bot):
             model.bot = self
 
     async def on_ready(self):
+        if not self.persistent_views_added:
+            from cogs.views import SelfRoles
+
+            self.add_view(SelfRoles(), message_id=884468160655425536)
+
+            self.persistent_views_added = True
+
         print(f"Ragnarok is coming...")
 
     async def close(self):
