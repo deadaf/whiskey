@@ -279,7 +279,7 @@ class Utility(commands.Cog):
         embed = discord.Embed(description=url)
         channel = await self.bot.fetch_channel(852200611520184320)
         await channel.send(embed=embed)
-        await ctx.message.add_reaction(":thumbsup:")
+        await ctx.send("thoda wait kriye.")
 
 
 def setup(bot):
