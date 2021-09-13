@@ -187,7 +187,7 @@ class Utility(commands.Cog):
         """Gives you a documentation link for a discord.py entity (master branch)"""
         await self.do_rtfm(ctx, "master", obj)
 
-    @commands.commands.command()
+    @commands.command()
     async def invite(self, ctx: commands.Context):
         """invite me"""
         await ctx.send(
