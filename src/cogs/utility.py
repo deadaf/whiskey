@@ -16,7 +16,8 @@ import discord
 
 from .views import SelfRoles
 from .utils import fuzzy
-from discord.ext.commands import command, Context, Cog, group, is_owner
+
+from discord.ext import commands
 
 
 # https://github.com/Rapptz/RoboDanny/blob/rewrite/cogs/api.py
@@ -55,7 +56,7 @@ class SphinxObjectFileReader:
                 pos = buf.find(b"\n")
 
 
-class Utility(Cog):
+class Utility(commands.Cog):
     def __init__(self, bot: Whiskey):
         self.bot = bot
 
@@ -168,7 +169,7 @@ class Utility(Cog):
         e.description = "\n".join(f"[`{key}`]({url})" for key, url in matches)
         await ctx.send(embed=e)
 
-    @group(aliases=["rtfd"], invoke_without_command=True)
+    @commands.group(aliases=["rtfd"], invoke_without_command=True)
     async def rtfm(self, ctx, *, obj: str = None):
         """Gives you a documentation link for a discord.py entity.
         Events, objects, and functions are all supported through
@@ -186,8 +187,8 @@ class Utility(Cog):
         """Gives you a documentation link for a discord.py entity (master branch)"""
         await self.do_rtfm(ctx, "master", obj)
 
-    @command()
-    async def invite(self, ctx: Context):
+    @commands.commands.command()
+    async def invite(self, ctx: commands.Context):
         """invite me"""
         await ctx.send(
             discord.utils.oauth_url(
@@ -203,21 +204,21 @@ class Utility(Cog):
             )
         )
 
-    @command()
-    async def server(self, ctx: Context):
+    @commands.command()
+    async def server(self, ctx: commands.Context):
         """get a link to my server"""
         await ctx.send("discord.gg/aBM5xz6")
 
-    @command()
-    async def source(self, ctx: Context):
+    @commands.command()
+    async def source(self, ctx: commands.Context):
         """yes, I am open-souce"""
         await ctx.send("<https://github.com/deadaf/whiskey>")
 
-    @command()
-    async def stats(self, ctx: Context):
+    @commands.command()
+    async def stats(self, ctx: commands.Context):
         await ctx.send(f"Servers: {len(self.bot.guilds)}\nUsers: {sum(g.member_count for g in self.bot.guilds)}")
 
-    @command()
+    @commands.command()
     async def charinfo(self, ctx, *, characters: str):
         """
         Shows you information about a number of characters.
@@ -234,8 +235,8 @@ class Utility(Cog):
             return await ctx.send("Output too long to display.")
         await ctx.send(msg)
 
-    @command(hidden=True)
-    @is_owner()
+    @commands.command(hidden=True)
+    @commands.is_owner()
     async def selfroles(self, ctx):
         embed = discord.Embed(color=COLOR, title="Claim Self-Roles")
         embed.description = "Below is a list of self claimable roles along with the purpose they serve. We promise, we won't ping you unless it's really important."
@@ -259,6 +260,26 @@ class Utility(Cog):
         )
         await ctx.message.delete()
         await ctx.send(embed=embed, view=SelfRoles())
+
+    # @commands.command()
+    # @commands.has_permissions(manage_nicknames=True)
+    # @commands.bot_has_guild_permissions(manage_nicknames=True)
+    # async def nickclean(self, ctx: commands.Context):
+    #     """Clean every member's nickname, excluding bots"""
+    #     for m in ctx.guild.members:
+    #         if m.bot:
+    #             continue
+
+    #         ...
+
+    @commands.command()
+    async def addbot(self, ctx: commands.Context, clientID: int, reason: str = None):
+        """add your bot."""
+        url = f"https://discord.com/oauth2/authorize?&client_id={clientID}&scope=applications.commands+bot&permissions=0&response_type=code"
+        embed = discord.Embed(description=url)
+        channel = await self.bot.fetch_channel(852200611520184320)
+        await channel.send(embed=embed)
+        await ctx.react(":thumbsup:")
 
 
 def setup(bot):
