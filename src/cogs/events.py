@@ -17,6 +17,7 @@ from models import ResponseData, Response
 import discord
 from constants import COLOR
 
+from contextlib import suppress
 from unicodedata import normalize
 import random
 from .utils import response_ignore_check
@@ -124,9 +125,11 @@ class WhiskeyEvents(commands.Cog):
         await c.send(random.choice(_list).format(member.mention))
 
     async def clean_name(self, member: discord.Member):
-        _n = normalize("NKFC", member.display_name)
+        _n = normalize("NFKC", member.display_name)
         _n = re.sub(r"[^\w\s]", "", _n)
-        return await member.edit(nick=_n if _n else "bad_nick")
+
+        with suppress(discord.HTTPException):
+            return await member.edit(nick=_n if _n else "bad_nick")
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
