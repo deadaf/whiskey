@@ -146,6 +146,14 @@ class WhiskeyEvents(commands.Cog):
 
         await self.clean_name(message.author)
 
+    @commands.Cog.listener()
+    async def on_guild_member_update(self, before: discord.Member, after: discord.Member):
+        if not before.guild.id == 746337818388987967:
+            return
+
+        if before.display_name != after.display_name:
+            await self.clean_name(after)
+
 
 def setup(bot):
     bot.add_cog(WhiskeyEvents(bot))
