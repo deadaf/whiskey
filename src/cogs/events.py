@@ -125,8 +125,8 @@ class WhiskeyEvents(commands.Cog):
         await c.send(random.choice(_list).format(member.mention))
 
     async def clean_name(self, member: discord.Member):
-        _n = normalize("NFKC", member.display_name)
-        _n = re.sub(r"[^\w\s]", "", _n)
+        _n = normalize("NFKC", member.display_name).encode("ascii", "ignore").decode()
+        _n = re.sub(r"[^a-zA-Z']+", "", _n)
 
         with suppress(discord.HTTPException):
             return await member.edit(nick=_n if _n else "bad_nick")
@@ -137,7 +137,7 @@ class WhiskeyEvents(commands.Cog):
             return
 
         await self.clean_name(member)
-        await self.welcome_member(member)
+        # await self.welcome_member(member)
 
     @commands.Cog.listener(name="on_message")
     async def on_ganda_message(self, message: discord.Message):
