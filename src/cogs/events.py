@@ -17,6 +17,8 @@ from models import ResponseData, Response
 import discord
 from constants import COLOR
 
+from unicodedata import normalize
+import random
 from .utils import response_ignore_check
 
 
@@ -104,6 +106,42 @@ class WhiskeyEvents(commands.Cog):
             await ResponseData.filter(pk=response.id).update(
                 upvote=response.upvote + upvote, downvote=response.downvote + downvote, uses=response.uses + 1
             )
+
+    async def welcome_member(self, member: discord.Member):
+        _list = [
+            "{} is here.",
+            "Everyone welcome {}.",
+            "{} hoped into the server.",
+            "Aaiye, aapka intzaar tha {}.",
+            "Dekho, woh aa gya {}.",
+            "A wild {} appeared.",
+            "Yay you made it {}.",
+            "{} joined the party.",
+            "Bhai {}, daru laya hai?",
+            "Bhai {} tu aagya, bahot acha laga.",
+        ]
+        c = self.bot.get_channel(829945755644592168)
+        await c.send(random.choice(_list).format(member.mention))
+
+    async def clean_name(self, member: discord.Member):
+        _n = normalize("NKFC", member.display_name)
+        _n = re.sub(r"[^\w\s]", "", _n)
+        return await member.edit(nick=_n if _n else "bad_nick")
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member: discord.Member):
+        if not member.guild.id == 746337818388987967:
+            return
+
+        await self.clean_name(member)
+        await self.welcome_member(member)
+
+    @commands.Cog.listener(name="on_message")
+    async def on_ganda_message(self, message: discord.Message):
+        if not message.guild.id == 746337818388987967 or message.author.bot:
+            return
+
+        await self.clean_name(message.author)
 
 
 def setup(bot):

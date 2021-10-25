@@ -275,6 +275,9 @@ class Utility(commands.Cog):
     @commands.command()
     async def addbot(self, ctx: commands.Context, clientID: int, reason: str = None):
         """add your bot."""
+        if clientID in (m.id for m in ctx.guild.members):
+            return await ctx.send(f"{clientID} is already in server.")
+
         url = f"https://discord.com/oauth2/authorize?client_id={clientID}&scope=bot&permissions=0"
         embed = discord.Embed(description=url)
         channel = await self.bot.fetch_channel(852200611520184320)
