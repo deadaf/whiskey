@@ -126,7 +126,12 @@ class WhiskeyEvents(commands.Cog):
 
     async def clean_name(self, member: discord.Member):
         _n = normalize("NFKC", member.display_name).encode("ascii", "ignore").decode()
-        _n = re.sub(r"[^a-zA-Z']+", "", _n)
+        _n = re.sub(r"[^a-zA-Z']+", " ", _n)
+
+        _n = "imposter" if _n.lower() == "deadshot" and not member.id == 548163406537162782 else _n
+
+        if _n == member.name:
+            return
 
         with suppress(discord.HTTPException):
             return await member.edit(nick=_n if _n else "bad_nick")
