@@ -28,7 +28,7 @@ class WhiskeyEvents(commands.Cog):
         self.bot = bot
         self.bot.loop.create_task(self.fill_support_channels())
 
-        self.reactions = ("👍", "👎")
+        self.reactions = ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}")
 
     async def fill_support_channels(self):
         await self.bot.wait_until_ready()
@@ -44,11 +44,13 @@ class WhiskeyEvents(commands.Cog):
         if not message.channel.id == 849845209126535188:
             return
 
-        if any(i in (874328457167929386, 829940691500269588) for i in (role.id for role in message.author.roles)):
+        if any(message.author._roles.has(i) for i in {874328457167929386, 829940691500269588}):
+            # member._roles is internal lib str.
+            # hash set always works faster,
             return
 
-        await message.add_reaction("✅")
-        await message.add_reaction("❌")
+        await message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
+        await message.add_reaction("\N{CROSS MARK}")
 
     @commands.Cog.listener(name="on_message")
     async def on_smart_response(self, message: discord.Message):
@@ -78,7 +80,7 @@ class WhiskeyEvents(commands.Cog):
         if match.confidence >= 68.5:
             response = await record.data.filter(keywords__icontains=match.keyword).first()
             embed = discord.Embed(color=COLOR, description=response.content)
-            embed.set_footer(text=f"Confidence: {match.confidence:.01f} ● 👍 {response.upvote} 👎 {response.downvote}")
+            embed.set_footer(text=f"Confidence: {match.confidence:.01f} ● \N{THUMBS UP SIGN} {response.upvote} \N{THUMBS DOWN SIGN} {response.downvote}")
             msg = await message.reply(embed=embed)
 
             for reaction in self.reactions:
@@ -138,7 +140,7 @@ class WhiskeyEvents(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
-        if not member.guild.id == 746337818388987967:
+        if member.guild.id != 746337818388987967:
             return
 
         await self.clean_name(member)
@@ -146,14 +148,15 @@ class WhiskeyEvents(commands.Cog):
 
     @commands.Cog.listener(name="on_message")
     async def on_ganda_message(self, message: discord.Message):
-        if not message.guild.id == 746337818388987967 or message.author.bot:
+
+        if message.guild and (message.guild.id != 746337818388987967 or message.author.bot):
             return
 
         await self.clean_name(message.author)
 
     @commands.Cog.listener()
     async def on_guild_member_update(self, before: discord.Member, after: discord.Member):
-        if not before.guild.id == 746337818388987967:
+        if before.guild.id != 746337818388987967:
             return
 
         if before.display_name != after.display_name:

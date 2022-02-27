@@ -11,7 +11,7 @@ class SelfRoles(discord.ui.View):
 
     @discord.ui.button(style=discord.ButtonStyle.blurple, custom_id="quotient_updates", label="Quotient-Updates", row=1)
     async def quo_updates(self, button: discord.Button, interaction: discord.Interaction):
-        if self.quo_updates_role in (role.id for role in interaction.user.roles):
+        if interaction.user._roles.has(self.quo_updates_role):
             await interaction.user.remove_roles(discord.Object(id=self.quo_updates_role))
             return await interaction.response.send_message("Quotient-Updates role removed.", ephemeral=True)
 
@@ -20,7 +20,7 @@ class SelfRoles(discord.ui.View):
 
     @discord.ui.button(style=discord.ButtonStyle.blurple, custom_id="events", label="Events (Giveaways)", row=1)
     async def quo_events(self, button: discord.Button, interaction: discord.Interaction):
-        if self.events_role in (role.id for role in interaction.user.roles):
+        if interaction.user._roles.has(self.events_role):
             await interaction.user.remove_roles(discord.Object(id=self.events_role))
             return await interaction.response.send_message("Events (Giveaways) role removed.", ephemeral=True)
 
@@ -29,7 +29,7 @@ class SelfRoles(discord.ui.View):
 
     @discord.ui.button(style=discord.ButtonStyle.blurple, custom_id="black", label="Black Color", row=1)
     async def quo_blacky(self, button: discord.Button, interaction: discord.Interaction):
-        if self.black_role in (role.id for role in interaction.user.roles):
+        if interaction.user._roles.has(self.black_role):
             await interaction.user.remove_roles(discord.Object(id=self.black_role))
             return await interaction.response.send_message("Black-Color role removed.", ephemeral=True)
 
@@ -38,7 +38,7 @@ class SelfRoles(discord.ui.View):
 
     @discord.ui.button(style=discord.ButtonStyle.blurple, custom_id="status", label="Discord-Status", row=1)
     async def quo_status(self, button: discord.Button, interaction: discord.Interaction):
-        if self.discord_staus in (role.id for role in interaction.user.roles):
+        if interaction.user._roles.has(self.discord_staus):
             await interaction.user.remove_roles(discord.Object(id=self.discord_staus))
             return await interaction.response.send_message("Discord-Status role removed.", ephemeral=True)
 
