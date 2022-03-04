@@ -50,7 +50,7 @@ class Suggest(commands.Cog):
         self.suggested_messages_id: Dict[int, Message] = {}
         self.suggestion_channel = None
 
-    def cog_check(ctx):
+    def cog_check(self, ctx):
         return ctx.guild is not None and ctx.guild.id == HEAD_GUILD
 
 
