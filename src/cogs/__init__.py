@@ -1,1 +1,1 @@
-__loadable__ = ("cogs.events", "cogs.response", "cogs.utility")
+__loadable__ = ("cogs.events", "cogs.response", "cogs.utility", "cogs.suggest")
