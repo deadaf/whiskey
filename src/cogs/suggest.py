@@ -2,7 +2,7 @@ from __future__ import annotations
 from itertools import zip_longest
 
 from typing import TYPE_CHECKING, Optional, Dict, Union, List
-from .utils import TabularData
+from .utils import TabularData, WrappedMessageConverter
 
 if TYPE_CHECKING:
     from bot import Whiskey
@@ -84,7 +84,7 @@ class Suggest(commands.Cog):
         msg: Message = await self.suggestion_channel.send(content, **kwargs)
         self.suggested_messages_id[msg.id] = msg
         await self.__add_bulk_reaction(msg, *REACTION_EMOJI)
-        await msg.create_thread(name=f"Suggestion {msg.id}")
+        await msg.create_thread(name=f"Suggestion {msg.author}")
         return msg
 
     async def __notify_on_suggestion(self, ctx, *, message: Message) -> None:
@@ -153,6 +153,11 @@ class Suggest(commands.Cog):
             return await ctx.send(
                 f"Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
             )
+        
+        if msg.author.id != self.bot.user.id:
+            return await ctx.send(
+                f"Invalid `{messageID}`"
+            )
 
         if ctx.channel.permissions_for(ctx.author).manage_messages:
             await msg.delete(delay=0)
@@ -174,6 +179,11 @@ class Suggest(commands.Cog):
         if not msg:
             return await ctx.send(
                 f"Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
+            )
+        
+        if msg.author.id != self.bot.user.id:
+            return await ctx.send(
+                f"Invalid `{messageID}`"
             )
         
         table = TabularData()
@@ -203,7 +213,7 @@ class Suggest(commands.Cog):
 
 
     @suggest.command(name="note", aliases=["remark"])
-    @commands.has_permissions(manage_messages=True)
+    @commands.check_any(commands.has_permissions(manage_messages=True), commands.has_any_role(874328457167929386, 'Moderator'))
     async def add_note(self, ctx, messageID: int, *, remark: str):
         """To add a note in suggestion embed"""
         msg = await self.get_or_fetch_message(messageID)
@@ -211,6 +221,12 @@ class Suggest(commands.Cog):
             return await ctx.send(
                 f"Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
             )
+        
+        if msg.author.id != self.bot.user.id:
+            return await ctx.send(
+                f"Invalid `{messageID}`"
+            )
+        
         embed = msg.embeds[0]
         embed.clear_fields()
         embed.add_field(name="Remark", value=remark[:250])
@@ -224,7 +240,7 @@ class Suggest(commands.Cog):
 
 
     @suggest.command(name="clear", aliases=["cls"])
-    @commands.has_permissions(manage_messages=True)
+    @commands.check_any(commands.has_permissions(manage_messages=True), commands.has_any_role(874328457167929386, 'Moderator'))
     async def clear_suggestion_embed(self, ctx, messageID: int, *, remark: str):
         """To remove all kind of notes and extra reaction from suggestion embed"""
         msg = await self.get_or_fetch_message(messageID)
@@ -232,6 +248,12 @@ class Suggest(commands.Cog):
             return await ctx.send(
                 f"Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
             )
+        
+        if msg.author.id != self.bot.user.id:
+            return await ctx.send(
+                f"Invalid `{messageID}`"
+            )
+        
         embed = msg.embeds[0]
         embed.clear_fields()
         embed.color = 0xADD8E6
@@ -245,7 +267,7 @@ class Suggest(commands.Cog):
 
 
     @suggest.command(name="flag")
-    @commands.has_permissions(manage_messages=True)
+    @commands.check_any(commands.has_permissions(manage_messages=True), commands.has_any_role(874328457167929386, 'Moderator'))
     async def suggest_flag(self, ctx, messageID: int, flag: str):
         """To flag the suggestion.
         
@@ -261,6 +283,12 @@ class Suggest(commands.Cog):
             return await ctx.send(
                 f"Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
             )
+        
+        if msg.author.id != self.bot.user.id:
+            return await ctx.send(
+                f"Invalid `{messageID}`"
+            )
+        
         flag = flag.upper()
         try:
             payload = OTHER_REACTION[flag]
