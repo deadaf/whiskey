@@ -36,21 +36,21 @@ class WhiskeyEvents(commands.Cog):
             for channel_id in record.valid_channel_ids:
                 self.bot.support_channels.add(channel_id)
 
-    @commands.Cog.listener(name="on_message")
-    async def on_suggestion(self, message: discord.Message):
-        if not message.guild or message.author.bot:
-            return
+    # @commands.Cog.listener(name="on_message")
+    # async def on_suggestion(self, message: discord.Message):
+    #     if not message.guild or message.author.bot:
+    #         return
 
-        if not message.channel.id == 849845209126535188:
-            return
+    #     if not message.channel.id == 849845209126535188:
+    #         return
 
-        if any(message.author._roles.has(i) for i in {874328457167929386, 829940691500269588}):
-            # member._roles is internal lib str.
-            # hash set always works faster,
-            return
+    #     if any(message.author._roles.has(i) for i in {874328457167929386, 829940691500269588}):
+    #         # member._roles is internal lib str.
+    #         # hash set always works faster,
+    #         return
 
-        await message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
-        await message.add_reaction("\N{CROSS MARK}")
+    #     await message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
+    #     await message.add_reaction("\N{CROSS MARK}")
 
     @commands.Cog.listener(name="on_message")
     async def on_smart_response(self, message: discord.Message):
