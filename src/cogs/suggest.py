@@ -1,9 +1,8 @@
 from __future__ import annotations
-from ast import List
 from itertools import zip_longest
 
-from typing import TYPE_CHECKING, Optional, Dict, Union
-from constants import HEAD_GUILD
+from typing import TYPE_CHECKING, Optional, Dict, Union, List
+from .utils import TabularData
 
 if TYPE_CHECKING:
     from bot import Whiskey
@@ -12,8 +11,6 @@ from discord.ext import commands
 from discord import Message, TextChannel, User, Member
 import discord
 import asyncio
-
-from .utils import TabularData
 
 
 SUGGESTION_CHANNEL_ID = 849845209126535188
@@ -51,7 +48,7 @@ class Suggest(commands.Cog):
         self.suggestion_channel = None
 
     def cog_check(self, ctx):
-        return ctx.guild is not None and ctx.guild.id == HEAD_GUILD
+        return ctx.guild is not None and ctx.guild.id == 746337818388987967
 
 
     async def get_or_fetch_message(self, message_id: int) -> Optional[Message]:
@@ -115,7 +112,7 @@ class Suggest(commands.Cog):
 
         content = (
             f"{user.mention} you suggestion of ID: {message.id} had being updated.\n"
-            f"By: {ctx.author} (`{ctx.author.mention}`)\n"
+            f"By: {ctx.author} (`{ctx.author.id}`)\n"
             f"Remark: {remark}\n"
             f"> {message.jump_url}"
         )
@@ -142,7 +139,7 @@ class Suggest(commands.Cog):
                 icon_url=ctx.guild.icon.url
             )
             msg = await self.__suggest(embed=embed)
-            await self.__notify_on_suggestion(ctx, msg)
+            await self.__notify_on_suggestion(ctx, message=msg)
             await ctx.message.delete(delay=0)
     
 
@@ -180,7 +177,6 @@ class Suggest(commands.Cog):
             )
         
         table = TabularData()
-        table.set_columns(["Upvote", "Downvote"])
         upvoter = []
         downvoter = []
         for reaction in msg.reactions:
@@ -188,9 +184,14 @@ class Suggest(commands.Cog):
                 upvoter = await reaction.users().flatten()
             elif str(reaction.emoji) == "\N{DOWNWARDS BLACK ARROW}":
                 downvoter = await reaction.users().flatten()
-        table.add_rows(zip_longest(upvoter, downvoter, fillvalue=''))
+        upvoter = [str(m) for m in upvoter]
+        downvoter = [str(m) for m in downvoter]
         
-        conflict = [i for i in upvoter + downvoter if i not in upvoter or i not in downvoter]
+        table.set_columns(["Upvote", "Downvote"])
+        ls = list(zip_longest(upvoter, downvoter, fillvalue=''))
+        table.add_rows(ls)
+
+        conflict = [i for i in upvoter if i in downvoter]
 
         embed = discord.Embed()
         embed.description = f"```\n{table.render()}```"
@@ -213,7 +214,7 @@ class Suggest(commands.Cog):
         embed = msg.embeds[0]
         embed.clear_fields()
         embed.add_field(name="Remark", value=remark[:250])
-        await msg.edit(embed=embed)
+        await msg.edit(content=msg.content, embed=embed)
 
         user_id = int(embed.footer.text.split(":")[1])
         user = ctx.guild.get_member(user_id)
@@ -234,7 +235,7 @@ class Suggest(commands.Cog):
         embed = msg.embeds[0]
         embed.clear_fields()
         embed.color = 0xADD8E6
-        await msg.edit(embed=embed)
+        await msg.edit(embed=embed, content=None)
 
         for reaction in msg.reactions:
             if str(reaction.emoji) not in REACTION_EMOJI:
@@ -245,7 +246,7 @@ class Suggest(commands.Cog):
 
     @suggest.command(name="flag")
     @commands.has_permissions(manage_messages=True)
-    async def suggest_flag(self, ctx, messageID, flag: str):
+    async def suggest_flag(self, ctx, messageID: int, flag: str):
         """To flag the suggestion.
         
         Avalibale Flags :-
