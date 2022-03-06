@@ -335,7 +335,7 @@ class Suggest(commands.Cog):
             return
 
         context: commands.Context = await self.bot.get_context(message, cls=commands.Context)
-        cmd: commands.Command = await self.bot.get_command("suggest")
+        cmd: commands.Command = self.bot.get_command("suggest")
 
         await context.invoke(cmd, suggestion=message.content)
 
