@@ -72,7 +72,7 @@ class Suggest(commands.Cog):
         else:
             return self.suggested_messages_id[message_id]
 
-    async def _fetch_channel(self, *, channel_id: Optional[int]=None) -> Optional[TextChannel]:
+    async def _fetch_channel(self, channel_id: Optional[int]=None) -> Optional[TextChannel]:
         channel_id: int = channel_id or SUGGESTION_CHANNEL_ID
         ch: Optional[TextChannel] = self.bot.get_channel(channel_id)
         if ch is None:
