@@ -332,21 +332,17 @@ class Suggest(commands.Cog):
         if self.suggestion_channel is None:
             self.suggestion_channel = await self._fetch_channel(SUGGESTION_CHANNEL_ID)
         
-        await self.__parse_mod_action(message)
-
         if message.channel.id != self.suggestion_channel.id:
             return
 
-        bucket = self.cooldown.get_bucket(message)
-        retry_after = bucket.update_rate_limit()
-
-        if retry_after:
-            return
+        await self.__parse_mod_action(message)
 
         context: commands.Context = await self.bot.get_context(message, cls=commands.Context)
-        cmd: commands.Command = self.bot.get_command("suggest")
+        # cmd: commands.Command = self.bot.get_command("suggest")
 
-        await context.invoke(cmd, suggestion=message.content)
+        # await context.invoke(cmd, suggestion=message.content)
+
+        await self.suggest(context, suggestion=message.content)
 
     async def __parse_mod_action(self, message: Message) -> None:
         if not self.__is_mod(message.author):
@@ -354,7 +350,7 @@ class Suggest(commands.Cog):
 
         if message.content.upper() in OTHER_REACTION:
             context: commands.Context = await self.bot.get_context(message, cls=commands.Context)
-            cmd: commands.Command = self.bot.get_command("suggest flag")
+            # cmd: commands.Command = self.bot.get_command("suggest flag")
 
             msg: Union[Message, discord.DeletedReferencedMessage] = message.reference.resolved
 
@@ -364,7 +360,8 @@ class Suggest(commands.Cog):
             if msg.author.id != self.bot.user.id:
                 return
 
-            await context.invoke(cmd, msg.id, message.content.upper())
+            # await context.invoke(cmd, msg.id, message.content.upper())
+            await self.suggest_flag(context, msg.id, message.content.upper())
 
     def __is_mod(self, member: Member) -> bool:
         if member._role.has(874328457167929386):
