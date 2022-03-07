@@ -127,7 +127,7 @@ class Suggest(commands.Cog):
 
     @commands.group(invoke_without_command=True)
     @commands.cooldown(1, 60, commands.BucketType.member)
-    async def suggest(self, ctx: commands.Context, *, suggestion: commands.clean_content=None):
+    async def suggest(self, ctx: commands.Context, *, suggestion: commands.clean_content):
         """Suggest something. Abuse of the command may result in required mod actions"""
 
         if not ctx.invoked_subcommand:
