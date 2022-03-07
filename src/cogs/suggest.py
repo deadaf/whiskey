@@ -364,7 +364,7 @@ class Suggest(commands.Cog):
             await self.suggest_flag(context, msg.id, message.content.upper())
 
     def __is_mod(self, member: Member) -> bool:
-        if member._role.has(874328457167929386):
+        if member._roles.has(874328457167929386):
             return True
 
         perms: discord.Permissions = member.guild_permissions
