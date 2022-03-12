@@ -125,7 +125,7 @@ class Suggest(commands.Cog):
             pass
 
 
-    @commands.group(invoke_without_command=True)
+    @commands.group(aliases=["suggestion"], invoke_without_command=True)
     @commands.cooldown(1, 60, commands.BucketType.member)
     async def suggest(self, ctx: commands.Context, *, suggestion: commands.clean_content):
         """Suggest something. Abuse of the command may result in required mod actions"""
@@ -273,7 +273,7 @@ class Suggest(commands.Cog):
 
     @suggest.command(name="flag")
     @commands.check_any(commands.has_permissions(manage_messages=True), commands.has_any_role(874328457167929386, 'Moderator'))
-    async def suggest_flag(self, ctx: commands.Context, messageID: int, flag: str):
+    async def suggest_flag(self, ctx: commands.Context, messageID: int, *, flag: str=None):
         """To flag the suggestion.
         
         Avalibale Flags :-
@@ -283,6 +283,8 @@ class Suggest(commands.Cog):
         - DECLINE
         - APPROVED
         """
+        flag = flag or "INVALID"
+
         msg: Optional[Message] = await self.get_or_fetch_message(messageID)
         if not msg:
             return await ctx.send(
