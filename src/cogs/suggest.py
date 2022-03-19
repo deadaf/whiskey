@@ -53,7 +53,33 @@ class Suggest(commands.Cog):
     def cog_check(self, ctx):
         return ctx.guild is not None and ctx.guild.id == 746337818388987967
 
-    async def get_or_fetch_message(self, message_id: int) -> Optional[Message]:
+    async def get_or_fetch_message(
+        self, message_id: int, *, from_cache: bool=True, force_fetch: bool=False,
+    ) -> Optional[Message]:
+
+        if from_cache:
+            cached_message = self.bot._connection._messages
+            for msg in cached_message:
+                # looping over deque is O(n)
+                # I don't think the method is slow *thinks*
+                # since the suggestion is now very frequent,
+                # so it's ok for now
+                if msg.id == message_id:
+                    self.suggested_messages_id[message_id] = msg
+                    return msg
+
+        if force_fetch:
+            if self.suggestion_channel is None:
+                self.suggestion_channel = await self._fetch_channel()
+
+                await self.bot.wait_until_ready()
+
+                msg: Message = await self.suggestion_channel.fetch_message(
+                    message_id
+                )
+                self.suggested_messages_id[message_id] = msg
+                return msg
+
         try:
             self.suggested_messages_id[message_id]
         except KeyError:
@@ -180,7 +206,7 @@ class Suggest(commands.Cog):
     async def suggest_status(self, ctx: commands.Context, *, messageID: int):
         """To get the statistics os the suggestion"""
 
-        msg: Optional[Message] = await self.get_or_fetch_message(messageID)
+        msg: Optional[Message] = await self.get_or_fetch_message(messageID, force_fetch=True)
         if not msg:
             return await ctx.send(
                 f"Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
@@ -192,8 +218,13 @@ class Suggest(commands.Cog):
             )
         
         table = TabularData()
+
         upvoter = []
         downvoter = []
+        # to prevent `refrence-error`
+        # we are sure there always exists 2 reaction
+        # but, python is not smart as we UwU
+
         for reaction in msg.reactions:
             if str(reaction.emoji) == "\N{UPWARDS BLACK ARROW}":
                 upvoter = await reaction.users().flatten()
@@ -324,6 +355,37 @@ class Suggest(commands.Cog):
 
         if payload.message_id in self.suggested_messages_id:
             del self.suggested_messages_id[payload.message_id]
+
+
+    @commands.Cog.listener(name="on_raw_reaction_add")
+    async def suggest_msg_react(self, payload):
+        if self.suggestion_channel is None:
+            self.suggestion_channel = await self._fetch_channel()
+        
+        if self.suggestion_channel.id != payload.channel_id:
+            return
+        
+        # not adding extra `is-mod` check, cause only mods can
+        # react on that channel (discord internal permission management)
+
+        for i in OTHER_REACTION:
+            # I don't find any faster method
+            # to get the emoji from nested dict into dict
+            # Dict[str, Dict[str, Any]]
+            if str(payload.emoji) == OTHER_REACTION[i]["emoji"]:
+                msg: Optional[Message] = await self.get_or_fetch_message(payload.message_id)
+
+                if not msg:
+                    return
+
+                if msg.author.id != self.bot.user.id:
+                    return
+
+                embed: discord.Embed = msg.embeds[0]
+                embed.color = OTHER_REACTION[i]["color"]
+                content = f"Flagged: {i} | {OTHER_REACTION[i]['emoji']}"
+                
+                return await msg.edit(content=content, embed=embed)
 
 
     @commands.Cog.listener()

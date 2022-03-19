@@ -209,7 +209,7 @@ class Utility(commands.Cog):
         """get a link to my server"""
         await ctx.send("discord.gg/aBM5xz6")
 
-    @commands.command()
+    @commands.command(aliases=['src'])
     async def source(self, ctx: commands.Context):
         """yes, I am open-souce"""
         await ctx.send("<https://github.com/deadaf/whiskey>")
