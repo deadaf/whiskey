@@ -346,7 +346,7 @@ class Suggest(commands.Cog):
 
 
     @commands.Cog.listener(name="on_raw_message_delete")
-    async def suggest_msg_delete(self, payload) -> None:
+    async def suggest_msg_delete(self, payload: discord.RawMessageDeleteEvent) -> None:
         if self.suggestion_channel is None:
             self.suggestion_channel = await self._fetch_channel()
         
@@ -358,7 +358,7 @@ class Suggest(commands.Cog):
 
 
     @commands.Cog.listener(name="on_raw_reaction_add")
-    async def suggest_msg_react(self, payload):
+    async def suggest_msg_react(self, payload: discord.RawReactionActionEvent):
         if self.suggestion_channel is None:
             self.suggestion_channel = await self._fetch_channel()
         
