@@ -274,13 +274,27 @@ class Utility(commands.Cog):
 
     @commands.command()
     async def addbot(self, ctx: commands.Context, clientID: int, *, reason: str = None):
-        """add your bot."""
-        reason = reason or "No reason provided"
-        if clientID in (m.id for m in ctx.guild.members):
-            return await ctx.send(f"{clientID} is already in server.")
+        """To add your bot. Command will only works in Quotient HQ (746337818388987967)"""
+        if ctx.guild.id != 746337818388987967:
+            return await ctx.send("Command is restricted to Quotient HQ (746337818388987967) only")
 
-        url = f"https://discord.com/oauth2/authorize?client_id={clientID}&scope=bot&permissions=0"
-        embed = discord.Embed(description=f"{url}\n> Requested by: {ctx.author} ({ctx.author.id}): {reason}")
+        reason = reason or "No reason provided"
+
+        BOT = ctx.guild.get_member(clientID)
+        if BOT is not None:
+            return await ctx.send(f"<@{clientID}> (`{clientID}`) is already in server.")
+
+        url = discord.utils.oauth_url(
+            clientID,
+            permissions=discord.Permissions.none(),
+            scopes=('bot', 'applications.commands'),
+            disable_guild_select=False
+        )
+
+        embed = discord.Embed(
+            description=f"**[Click here to add the bot]({url})**", timestamp=ctx.message.created_at
+        )
+        embed.set_footer(text=f"Requested by - {ctx.author} ({ctx.author.id}) | {reason}")
         channel = self.bot.get_channel(852200611520184320)
         await channel.send(embed=embed)
         await ctx.send("thoda wait kriye.")
