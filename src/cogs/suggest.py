@@ -1,4 +1,5 @@
 from __future__ import annotations
+import io
 from itertools import zip_longest
 
 from typing import TYPE_CHECKING, Any, Optional, Dict, Union, List
@@ -107,10 +108,12 @@ class Suggest(commands.Cog):
         
         return ch
 
-    async def __suggest(self, content: Optional[str]=None, *, embed: discord.Embed, ctx: commands.Context) -> Message:
+    async def __suggest(
+        self, content: Optional[str]=None, *, embed: discord.Embed, ctx: commands.Context, file: Optional[discord.File]=None
+    ) -> Message:
         if self.suggestion_channel is None:
             self.suggestion_channel = await self._fetch_channel(SUGGESTION_CHANNEL_ID)
-        msg: Optional[Message] = await self.suggestion_channel.send(content, embed=embed)
+        msg: Optional[Message] = await self.suggestion_channel.send(content, embed=embed, file=file)
         self.suggested_messages_id[msg.id] = msg
         await self.__add_bulk_reaction(msg, *REACTION_EMOJI)
         await msg.create_thread(name=f"Suggestion {ctx.author}")
@@ -168,10 +171,17 @@ class Suggest(commands.Cog):
                 text=f"Author ID: {ctx.author.id}",
                 icon_url=ctx.guild.icon.url
             )
-            msg = await self.__suggest(ctx=ctx, embed=embed)
+
+            if ctx.message.attachments:
+                if ctx.message.attachments[0].url.lower().endswith(('png', 'jpeg', 'jpg', 'gif', 'webp')):
+                    _bytes = await ctx.message.attachments[0].read(use_cached=True)
+                    file = discord.File(io.BytesIO(_bytes), "image.jpg")
+                    embed.set_image(url="attachment://image.jpg")
+
+            msg = await self.__suggest(ctx=ctx, embed=embed, file=file)
             await self.__notify_on_suggestion(ctx, message=msg)
             await ctx.message.delete(delay=0)
-    
+
 
     @suggest.command(name="delete")
     @commands.cooldown(1, 60, commands.BucketType.member)
@@ -183,7 +193,7 @@ class Suggest(commands.Cog):
             return await ctx.send(
                 f"Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
             )
-        
+
         if msg.author.id != self.bot.user.id:
             return await ctx.send(
                 f"Invalid `{messageID}`"
@@ -193,10 +203,10 @@ class Suggest(commands.Cog):
             await msg.delete(delay=0)
             await ctx.send("Done", delete_after=5)
             return
-        
+
         if int(msg.embeds[0].footer.text.split(":")[1]) != ctx.author.id:
             return await ctx.send(f"You don't own that 'suggestion'")
-        
+
         await msg.delete(delay=0)
         await ctx.send("Done", delete_after=5)
 
