@@ -287,7 +287,7 @@ class Suggest(commands.Cog):
 
     @suggest.command(name="clear", aliases=["cls"])
     @commands.check_any(commands.has_permissions(manage_messages=True), commands.has_any_role(874328457167929386, 'Moderator'))
-    async def clear_suggestion_embed(self, ctx: commands.Context, messageID: int, *, remark: str):
+    async def clear_suggestion_embed(self, ctx: commands.Context, messageID: int,):
         """To remove all kind of notes and extra reaction from suggestion embed"""
         msg: Optional[Message] = await self.get_or_fetch_message(messageID)
         if not msg:
