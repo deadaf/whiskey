@@ -171,11 +171,13 @@ class Suggest(commands.Cog):
                 text=f"Author ID: {ctx.author.id}",
                 icon_url=ctx.guild.icon.url
             )
+            file = None
+            # prevents the reference error
 
             if ctx.message.attachments:
                 if ctx.message.attachments[0].url.lower().endswith(('png', 'jpeg', 'jpg', 'gif', 'webp')):
                     _bytes = await ctx.message.attachments[0].read(use_cached=True)
-                    file = discord.File(io.BytesIO(_bytes), "image.jpg")
+                    file: discord.File = discord.File(io.BytesIO(_bytes), "image.jpg")
                     embed.set_image(url="attachment://image.jpg")
 
             msg = await self.__suggest(ctx=ctx, embed=embed, file=file)
@@ -422,17 +424,18 @@ class Suggest(commands.Cog):
         if not self.__is_mod(message.author):
             return
 
+        context: commands.Context = await self.bot.get_context(message, cls=commands.Context)
+        # cmd: commands.Command = self.bot.get_command("suggest flag")
+
+        msg: Union[Message, discord.DeletedReferencedMessage] = message.reference.resolved
+
+        if not isinstance(msg, discord.Message):
+            return
+
+        if msg.author.id != self.bot.user.id:
+            return
+
         if message.content.upper() in OTHER_REACTION:
-            context: commands.Context = await self.bot.get_context(message, cls=commands.Context)
-            # cmd: commands.Command = self.bot.get_command("suggest flag")
-
-            msg: Union[Message, discord.DeletedReferencedMessage] = message.reference.resolved
-
-            if not isinstance(msg, discord.Message):
-                return
-
-            if msg.author.id != self.bot.user.id:
-                return
 
             # await context.invoke(cmd, msg.id, message.content.upper())
             await self.suggest_flag(context, msg.id, message.content.upper())
