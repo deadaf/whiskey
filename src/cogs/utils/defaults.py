@@ -1,4 +1,6 @@
-from typing import NamedTuple, List
+from __future__ import annotations
+
+from typing import Any, NamedTuple, List
 from discord import Member
 from difflib import get_close_matches as GCM, SequenceMatcher as SM
 
@@ -8,12 +10,12 @@ class Match(NamedTuple):
     confidence: float
 
 
-def response_ignore_check(member: Member, ignored: List[int]):
+def response_ignore_check(member: Member, ignored: List[int]) -> bool:
     return bool(any(member._roles.has(i) for i in ignored))
 
 
 
-def get_best_match(keywords: list, sentence: str):
+def get_best_match(keywords: List[Any], sentence: str) -> List[Any]:
     matches = GCM(sentence, keywords, cutoff=0.5)
     if not matches:
         return None

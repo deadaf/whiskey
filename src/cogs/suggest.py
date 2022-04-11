@@ -450,5 +450,5 @@ class Suggest(commands.Cog):
 
         return False
 
-def setup(bot: Whiskey):
-    bot.add_cog(Suggest(bot))
+async def setup(bot: Whiskey):
+    await bot.add_cog(Suggest(bot))

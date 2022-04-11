@@ -59,6 +59,7 @@ class SphinxObjectFileReader:
 class Utility(commands.Cog):
     def __init__(self, bot: Whiskey):
         self.bot = bot
+        self._rtfm_cache: typing.Dict[str, typing.Any] = {}
 
     def parse_object_inv(self, stream, url):
         # key: URL
@@ -170,7 +171,7 @@ class Utility(commands.Cog):
         await ctx.send(embed=e)
 
     @commands.group(aliases=["rtfd"], invoke_without_command=True)
-    async def rtfm(self, ctx, *, obj: str = None):
+    async def rtfm(self, ctx, *, obj: str = None) -> None:
         """Gives you a documentation link for a discord.py entity.
         Events, objects, and functions are all supported through
         a cruddy fuzzy algorithm.
@@ -178,12 +179,12 @@ class Utility(commands.Cog):
         await self.do_rtfm(ctx, "latest", obj)
 
     @rtfm.command(name="python", aliases=["py"])
-    async def rtfm_python(self, ctx, *, obj: str = None):
+    async def rtfm_python(self, ctx, *, obj: str = None) -> None:
         """Gives you a documentation link for a Python entity."""
         await self.do_rtfm(ctx, "python", obj)
 
     @rtfm.command(name="master", aliases=["2.0"])
-    async def rtfm_master(self, ctx, *, obj: str = None):
+    async def rtfm_master(self, ctx, *, obj: str = None) -> None:
         """Gives you a documentation link for a discord.py entity (master branch)"""
         await self.do_rtfm(ctx, "master", obj)
 
@@ -258,7 +259,7 @@ class Utility(commands.Cog):
             value="Everytime discord gets drunk or shows unexpected behaviour, this role will be notified. (*we really recommend you to take this*)",
             inline=False,
         )
-        await ctx.message.delete()
+        await ctx.message.delete(delay=0)
         await ctx.send(embed=embed, view=SelfRoles())
 
     # @commands.command()
@@ -300,5 +301,5 @@ class Utility(commands.Cog):
         await ctx.send("thoda wait kriye.")
 
 
-def setup(bot):
-    bot.add_cog(Utility(bot))
+async def setup(bot):
+    await bot.add_cog(Utility(bot))

@@ -1,10 +1,13 @@
+from __future__ import annotations
+from typing import Optional
+
 from models import Response
 
 from discord.ext import commands
 
 
 def has_not_done_setup():
-    async def predicate(ctx):
+    async def predicate(ctx: commands.Context) -> Optional[bool]:
         record = await Response.get_or_none(guild_id=ctx.guild.id)
         if record:
             raise commands.CheckFailure(
@@ -17,7 +20,7 @@ def has_not_done_setup():
 
 
 def has_done_setup():
-    async def predicate(ctx):
+    async def predicate(ctx: commands.Context) -> Optional[bool]:
         record = await Response.get_or_none(guild_id=ctx.guild.id)
         if not record:
             raise commands.CheckFailure(

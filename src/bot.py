@@ -1,6 +1,7 @@
 import time
 import os
 import asyncio
+from typing import Any, Callable
 import aiohttp
 import discord
 from tortoise import Tortoise
@@ -21,29 +22,21 @@ os.environ["JISHAKU_NO_DM_TRACEBACK"] = "True"
 
 
 class Whiskey(commands.Bot):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(
             command_prefix=commands.when_mentioned_or("?"),
             strip_after_prefix=True,
             case_insensitive=True,
             intents=discord.Intents.all(),
             help_command=HelpCommand(),
-            allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, replied_user=False, users=False),
+            allowed_mentions=discord.AllowedMentions.none(),
             activity=discord.Activity(type=discord.ActivityType.playing, name="Are you drunk?"),
             **kwargs,
         )
         self._BotBase__cogs = commands.core._CaseInsensitiveDict()
 
         self.persistent_views_added = False
-
-        for cog in cogs.__loadable__:
-            self.load_extension(cog)
-
         self.load_extension("jishaku")
-
-        asyncio.get_event_loop().run_until_complete(self.init_whiskey())
-        self.loop = asyncio.get_event_loop()
-
         self.support_channels = set()
 
     @property
@@ -60,7 +53,12 @@ class Whiskey(commands.Bot):
     def db(self):
         return Tortoise.get_connection("default")._pool
 
-    async def init_whiskey(self):
+    async def setup_hook(self) -> None:
+        await self.init_whiskey()
+        for cog in cogs.__loadable__:
+            await self.load_extension(cog)
+
+    async def init_whiskey(self) -> None:
         self.session = aiohttp.ClientSession(loop=self.loop)
         await Tortoise.init(self.config.TORTOISE)
         await Tortoise.generate_schemas(safe=True)
@@ -68,7 +66,7 @@ class Whiskey(commands.Bot):
         for mname, model in Tortoise.apps.get("models").items():
             model.bot = self
 
-    async def on_ready(self):
+    async def on_ready(self) -> None:
         if not self.persistent_views_added:
             from cogs.views import SelfRoles
 
@@ -83,18 +81,18 @@ class Whiskey(commands.Bot):
         await self.session.close()
 
     @async_property
-    async def db_latency(self):
+    async def db_latency(self) -> str:
         t1 = time.perf_counter()
         await self.db.execute("SELECT 1;")
         t2 = time.perf_counter() - t1
         return f"{t2*1000:.2f}ms"
 
     @async_property
-    async def head_guild(self):
+    async def head_guild(self) -> discord.Guild:
         return await self.getch(self.get_guild, self.fetch_guild, self.config.HEAD_GUILD)
 
     @staticmethod
-    async def getch(get_method, fetch_method, _id):
+    async def getch(get_method: Callable, fetch_method: Callable, _id: int) -> Any:
         try:
             _result = get_method(_id) or await fetch_method(_id)
         except (discord.HTTPException, discord.Forbidden, discord.NotFound):
@@ -102,7 +100,7 @@ class Whiskey(commands.Bot):
         else:
             return _result
 
-    async def on_command_error(self, ctx, error):
+    async def on_command_error(self, ctx, error) -> None:
         ignorable = (CommandNotFound,)
 
         if not isinstance(error, ignorable):
