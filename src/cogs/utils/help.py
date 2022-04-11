@@ -1,11 +1,14 @@
+from __future__ import annotations
+
 from difflib import get_close_matches
+from typing import Optional
 from discord.ext import commands
 from constants import COLOR
 import discord
 
 
 class HelpCommand(commands.HelpCommand):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             command_attrs={
                 "help": "Shows help about the bot, a command, or a category",
@@ -13,7 +16,7 @@ class HelpCommand(commands.HelpCommand):
             verify_checks=False,
         )
 
-    async def send_bot_help(self, mapping):
+    async def send_bot_help(self, mapping) -> Optional[discord.Message]:
         ctx = self.context
         cats = []
 
@@ -30,9 +33,9 @@ class HelpCommand(commands.HelpCommand):
             )
 
         embed.set_footer(text="discord.gg/quotient")
-        await ctx.send(embed=embed)
+        return await ctx.send(embed=embed)
 
-    async def command_not_found(self, string: str):
+    async def command_not_found(self, string: str) -> str:
         message = f"Could not find the `{string}` command. "
         commands_list = [str(cmd) for cmd in self.context.bot.walk_commands()]
 
@@ -41,11 +44,11 @@ class HelpCommand(commands.HelpCommand):
 
         return message
 
-    async def send_command_help(self, command):
+    async def send_command_help(self, command) -> Optional[discord.Message]:
         embed = self.common_command_formatting(command)
-        await self.context.send(embed=embed)
+        return await self.context.send(embed=embed)
 
-    def common_command_formatting(self, command):
+    def common_command_formatting(self, command) -> discord.Embed:
         embed = discord.Embed(color=COLOR)
         embed.title = command.qualified_name
 

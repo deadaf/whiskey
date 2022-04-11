@@ -10,17 +10,24 @@ from constants import COLOR
 from discord import TextChannel, Member, Role, Embed
 from discord.ext import commands
 from models import Response, ResponseData, ArrayAppend, ArrayRemove
-from .utils import has_not_done_setup, has_done_setup, string_input, truncate_string, aenumerate, Pages
+from .utils import (
+    has_not_done_setup,
+    has_done_setup,
+    string_input,
+    truncate_string,
+    aenumerate,
+    Pages
+)
 
 
 class Responses(commands.Cog):
-    def __init__(self, bot: Whiskey):
+    def __init__(self, bot: Whiskey) -> None:
         self.bot = bot
 
     @commands.command()
     @commands.has_permissions(manage_guild=True)
     @has_not_done_setup()
-    async def rsetup(self, ctx, *channels: TextChannel):
+    async def rsetup(self, ctx: commands.Context, *channels: TextChannel) -> None:
         """setup auto response"""
         if not channels:
             return await ctx.send(
@@ -37,7 +44,7 @@ class Responses(commands.Cog):
     @commands.command()
     @has_done_setup()
     @commands.bot_has_guild_permissions(manage_messages=True, embed_links=True, add_reactions=True)
-    async def rcreate(self, ctx):
+    async def rcreate(self, ctx: commands.Context) -> None:
         """create a smart auto response"""
 
         def check(msg):
@@ -75,7 +82,7 @@ class Responses(commands.Cog):
     @commands.command()
     @commands.has_permissions(manage_guild=True)
     @has_done_setup()
-    async def rperm(self, ctx):
+    async def rperm(self, ctx: commands.Context) -> None:
         """allow/deny everyone to create responses"""
         record = await Response.get(pk=ctx.guild.id)
         await Response.filter(pk=ctx.guild.id).update(allow_all=not record.allow_all)
@@ -86,7 +93,7 @@ class Responses(commands.Cog):
 
     @commands.command()
     @has_done_setup()
-    async def rlist(self, ctx):
+    async def rlist(self, ctx: commands.Context) -> None:
         """list of all response this server has"""
         main_record = await Response.get(pk=ctx.guild.id)
 
@@ -101,7 +108,7 @@ class Responses(commands.Cog):
     @commands.command()
     @commands.has_permissions(manage_guild=True)
     @has_done_setup()
-    async def rdelete(self, ctx, response_id: int):
+    async def rdelete(self, ctx: commands.Context, response_id: int)-> None:
         """delete a smart response"""
         main_record = await Response.get(pk=ctx.guild.id)
         res = await main_record.data.filter(pk=response_id).first()
@@ -114,7 +121,7 @@ class Responses(commands.Cog):
     @commands.command()
     @commands.has_permissions(manage_guild=True)
     @has_done_setup()
-    async def rstats(self, ctx, response_id: int):
+    async def rstats(self, ctx: commands.Context, response_id: int)-> None:
         """stats of a response"""
         main_record = await Response.get(pk=ctx.guild.id)
         res = await main_record.data.filter(pk=response_id).first()
@@ -132,7 +139,7 @@ class Responses(commands.Cog):
     @commands.command()
     @commands.has_permissions(manage_guild=True)
     @has_done_setup()
-    async def rchannel(self, ctx, *, channel: TextChannel):
+    async def rchannel(self, ctx: commands.Context, *, channel: TextChannel) -> None:
         """add or remove a channel to valid support channels"""
 
         record = await Response.get(pk=ctx.guild.id)
@@ -148,7 +155,7 @@ class Responses(commands.Cog):
     @commands.command()
     @commands.has_permissions(manage_guild=True)
     @has_done_setup()
-    async def rignore(self, ctx, member_or_role: typing.Union[Member, Role]):
+    async def rignore(self, ctx: commands.Context, member_or_role: typing.Union[Member, Role])-> None:
         """ignore a member or role in support channel"""
         id = member_or_role.id
 
@@ -163,7 +170,7 @@ class Responses(commands.Cog):
     @commands.command()
     @has_done_setup()
     @commands.bot_has_permissions(embed_links=True)
-    async def rconfig(self, ctx):
+    async def rconfig(self, ctx: commands.Context) -> None:
         """Get current server's smart response config"""
 
         record = await Response.get(pk=ctx.guild.id)
@@ -185,7 +192,7 @@ class Responses(commands.Cog):
     @commands.command()
     @commands.has_permissions(manage_guild=True)
     @has_done_setup()
-    async def redit(self, ctx, response_id: int, option: str = None):
+    async def redit(self, ctx: commands.Context, response_id: int, option: str = None)-> None:
         """edit a response content or keywords"""
         main_record = await Response.get(pk=ctx.guild.id)
         res = await main_record.data.filter(pk=response_id).first()
@@ -223,15 +230,15 @@ class Responses(commands.Cog):
             query = "UPDATE response_data SET keywords = $1 WHERE id = $2"
             await self.bot.db.execute(query, valid_keywords, res.id)
             await ctx.send("keywords updated.")
+            return
 
-        else:
-            await ctx.send("please enter the new content for the smart response.")
+        await ctx.send("please enter the new content for the smart response.")
 
-            content = await string_input(ctx, check=check, timeout=300)
-            content = truncate_string(content, 3080)
-            await self.bot.db.execute("UPDATE response_data SET content = $1 WHERE id = $2", content, res.id)
-            await ctx.send("content updated.")
+        content = await string_input(ctx, check=check, timeout=300)
+        content = truncate_string(content, 3080)
+        await self.bot.db.execute("UPDATE response_data SET content = $1 WHERE id = $2", content, res.id)
+        await ctx.send("content updated.")
 
 
-def setup(bot):
-    bot.add_cog(Responses(bot))
+async def setup(bot):
+    await bot.add_cog(Responses(bot))
