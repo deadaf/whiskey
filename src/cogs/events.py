@@ -124,7 +124,8 @@ class WhiskeyEvents(commands.Cog):
     async def on_member_join(self, member: discord.Member) -> None:
         if member.guild.id != 746337818388987967:
             return
-
+        if member.id == 731007992920539259:
+            return
         await self.clean_name(member)
         # await self.welcome_member(member)
 
