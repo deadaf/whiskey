@@ -1,3 +1,4 @@
+import socket
 import time
 import os
 import asyncio
@@ -54,13 +55,13 @@ class Whiskey(commands.Bot):
         return Tortoise.get_connection("default")._pool
 
     async def setup_hook(self) -> None:
-        await self.init_whiskey()
         await self.load_extension("jishaku")
         for cog in cogs.__loadable__:
             try:
                 await self.load_extension(cog)
             except Exception:
                 traceback.print_exc()
+        await self.init_whiskey()
 
     async def init_whiskey(self) -> None:
         await Tortoise.init(self.config.TORTOISE)
@@ -110,11 +111,16 @@ class Whiskey(commands.Bot):
             return await ctx.send(error)
 
 
+bot = Whiskey()
+
+
 async def main() -> None:
-    bot = Whiskey()
-    async with bot:
-        bot.session = aiohttp.ClientSession(loop=bot.loop)
-        await bot.start(config.DISCORD_TOKEN)
+    async with aiohttp.ClientSession(
+        connector=aiohttp.TCPConnector(resolver=aiohttp.AsyncResolver(), family=socket.AF_INET)
+    ) as session:
+        async with bot:
+            bot.session = session
+            await bot.start(config.DISCORD_TOKEN)
 
 
 if __name__ == "__main__":
