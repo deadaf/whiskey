@@ -36,7 +36,6 @@ class Whiskey(commands.Bot):
         self._BotBase__cogs = commands.core._CaseInsensitiveDict()
 
         self.persistent_views_added = False
-        self.load_extension("jishaku")
         self.support_channels = set()
 
     @property
@@ -55,6 +54,7 @@ class Whiskey(commands.Bot):
 
     async def setup_hook(self) -> None:
         await self.init_whiskey()
+        await self.load_extension("jishaku")
         for cog in cogs.__loadable__:
             await self.load_extension(cog)
 
@@ -107,5 +107,11 @@ class Whiskey(commands.Bot):
             return await ctx.send(error)
 
 
+async def main() -> None:
+    bot = Whiskey()
+    async with bot:
+        await bot.start(config.DISCORD_TOKEN)
+
+
 if __name__ == "__main__":
-    Whiskey().run(config.DISCORD_TOKEN)
+    asyncio.run(main())
