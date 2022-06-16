@@ -1,6 +1,7 @@
 import time
 import os
 import asyncio
+import traceback
 from typing import Any, Callable
 import aiohttp
 import discord
@@ -56,10 +57,12 @@ class Whiskey(commands.Bot):
         await self.init_whiskey()
         await self.load_extension("jishaku")
         for cog in cogs.__loadable__:
-            await self.load_extension(cog)
+            try:
+                await self.load_extension(cog)
+            except Exception:
+                traceback.print_exc()
 
     async def init_whiskey(self) -> None:
-        self.session = aiohttp.ClientSession(loop=self.loop)
         await Tortoise.init(self.config.TORTOISE)
         await Tortoise.generate_schemas(safe=True)
 
@@ -110,6 +113,7 @@ class Whiskey(commands.Bot):
 async def main() -> None:
     bot = Whiskey()
     async with bot:
+        bot.session = aiohttp.ClientSession(loop=bot.loop)
         await bot.start(config.DISCORD_TOKEN)
 
 
