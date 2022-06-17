@@ -1,4 +1,5 @@
 from __future__ import annotations
+import contextlib
 import io
 from itertools import zip_longest
 
@@ -69,17 +70,16 @@ class Suggest(commands.Cog):
                     self.suggested_messages_id[message_id] = msg
                     return msg
 
-        if force_fetch:
-            if self.suggestion_channel is None:
-                self.suggestion_channel = await self._fetch_channel()
+        if force_fetch and self.suggestion_channel is None:
+            self.suggestion_channel = await self._fetch_channel()
 
-                await self.bot.wait_until_ready()
+            await self.bot.wait_until_ready()
 
-                msg: Message = await self.suggestion_channel.fetch_message(
-                    message_id
-                )
-                self.suggested_messages_id[message_id] = msg
-                return msg
+            msg: Message = await self.suggestion_channel.fetch_message(
+                message_id
+            )
+            self.suggested_messages_id[message_id] = msg
+            return msg
 
         try:
             self.suggested_messages_id[message_id]
@@ -127,10 +127,8 @@ class Suggest(commands.Cog):
             f"To delete the suggestion typing `{ctx.clean_prefix}suggest delete {_id}` in <#829953394499780638>\n"
             f"> {jump_url}"
         )
-        try:
+        with contextlib.suppress(discord.Forbidden):
             await ctx.author.send(content)
-        except discord.Forbidden:
-            pass
 
     async def __add_bulk_reaction(self, message: Message, *reactions: Union[discord.Emoji, str]) -> None:
         coros = [
@@ -148,10 +146,8 @@ class Suggest(commands.Cog):
             f"Remark: {remark}\n"
             f"> {message.jump_url}"
         )
-        try:
+        with contextlib.suppress(discord.Forbidden):
             await ctx.author.send(content)
-        except discord.Forbidden:
-            pass
 
 
     @commands.group(aliases=["suggestion"], invoke_without_command=True)
@@ -159,30 +155,30 @@ class Suggest(commands.Cog):
     async def suggest(self, ctx: commands.Context, *, suggestion: commands.clean_content):
         """Suggest something. Abuse of the command may result in required mod actions"""
 
-        if not ctx.invoked_subcommand:
-            embed = discord.Embed(
-                description=suggestion, timestamp=ctx.message.created_at, color=0xADD8E6
-            )
-            embed.set_author(
-                name=str(ctx.author),
-                icon_url=ctx.author.display_avatar.url
-            )
-            embed.set_footer(
-                text=f"Author ID: {ctx.author.id}",
-                icon_url=ctx.guild.icon.url
-            )
-            file = None
+        if ctx.invoked_subcommand:
+            return
+        embed = discord.Embed(
+            description=suggestion, timestamp=ctx.message.created_at, color=0xADD8E6
+        )
+        embed.set_author(
+            name=str(ctx.author),
+            icon_url=ctx.author.display_avatar.url
+        )
+        embed.set_footer(
+            text=f"Author ID: {ctx.author.id}",
+            icon_url=ctx.guild.icon.url
+        )
+        file = None
             # prevents the reference error
 
-            if ctx.message.attachments:
-                if ctx.message.attachments[0].url.lower().endswith(('png', 'jpeg', 'jpg', 'gif', 'webp')):
-                    _bytes = await ctx.message.attachments[0].read(use_cached=True)
-                    file: discord.File = discord.File(io.BytesIO(_bytes), "image.jpg")
-                    embed.set_image(url="attachment://image.jpg")
+        if ctx.message.attachments and ctx.message.attachments[0].url.lower().endswith(('png', 'jpeg', 'jpg', 'gif', 'webp')):
+            _bytes = await ctx.message.attachments[0].read(use_cached=True)
+            file: discord.File = discord.File(io.BytesIO(_bytes), "image.jpg")
+            embed.set_image(url="attachment://image.jpg")
 
-            msg = await self.__suggest(ctx=ctx, embed=embed, file=file)
-            await self.__notify_on_suggestion(ctx, message=msg)
-            await ctx.message.delete(delay=0)
+        msg = await self.__suggest(ctx=ctx, embed=embed, file=file)
+        await self.__notify_on_suggestion(ctx, message=msg)
+        await ctx.message.delete(delay=0)
 
 
     @suggest.command(name="delete")

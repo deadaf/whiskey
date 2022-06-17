@@ -3,7 +3,7 @@ from __future__ import annotations
 import typing
 import unicodedata
 
-from constants import COLOR
+from constants import COLOR, NOTICEBOARD
 
 if typing.TYPE_CHECKING:
     from bot import Whiskey
@@ -18,6 +18,7 @@ from .views import SelfRoles
 from .utils import fuzzy
 
 from discord.ext import commands
+from ..constants import HEAD_GUILD
 
 
 # https://github.com/Rapptz/RoboDanny/blob/rewrite/cogs/api.py
@@ -276,7 +277,7 @@ class Utility(commands.Cog):
     @commands.command()
     async def addbot(self, ctx: commands.Context, clientID: int, *, reason: str = None):
         """To add your bot. Command will only works in Quotient HQ (746337818388987967)"""
-        if ctx.guild.id != 746337818388987967:
+        if ctx.guild.id != HEAD_GUILD:
             return await ctx.send("Command is restricted to Quotient HQ (746337818388987967) only")
 
         reason = reason or "No reason provided"
@@ -296,7 +297,7 @@ class Utility(commands.Cog):
             description=f"**[Click here to add the bot]({url})**", timestamp=ctx.message.created_at
         )
         embed.set_footer(text=f"Requested by - {ctx.author} ({ctx.author.id}) | {reason}")
-        channel = self.bot.get_channel(852200611520184320)
+        channel = self.bot.get_channel(NOTICEBOARD)
         await channel.send(embed=embed)
         await ctx.send("thoda wait kriye.")
 
