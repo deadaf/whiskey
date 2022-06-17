@@ -11,7 +11,7 @@ class Match(NamedTuple):
 
 
 def response_ignore_check(member: Member, ignored: List[int]) -> bool:
-    return bool(any(member._roles.has(i) for i in ignored))
+    return any((member._roles.has(i) for i in ignored))
 
 
 

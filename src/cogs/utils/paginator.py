@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import discord
 from constants import COLOR
 from discord.ext import commands
@@ -227,11 +228,8 @@ class Pages:
                     pass
                 finally:
                     break
-            try:
+            with contextlib.suppress(Exception):
                 await self.message.remove_reaction(reaction, user)
-            except Exception:
-                pass
-
             await self.match()
 
 
@@ -274,10 +272,7 @@ class FieldPages(Pages):
         self.embed.title = self.title
 
         if self.maximum_pages > 1:
-            if self.show_entry_count:
-                text = f" ({page}/{self.maximum_pages})"
-            else:
-                text = f" ({page}/{self.maximum_pages})"
+            text = f" ({page}/{self.maximum_pages})"
             self.embed.title = self.title + text
 
         self.embed.set_footer(icon_url=self.footericon, text=self.footertext)
