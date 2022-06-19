@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import socket
 import time
 import os
@@ -24,6 +26,8 @@ os.environ["JISHAKU_NO_DM_TRACEBACK"] = "True"
 
 
 class Whiskey(commands.Bot):
+    session: aiohttp.ClientSession
+
     def __init__(self, **kwargs) -> None:
         super().__init__(
             command_prefix=commands.when_mentioned_or("?"),
