@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import socket
 import time
 import os
@@ -24,6 +26,8 @@ os.environ["JISHAKU_NO_DM_TRACEBACK"] = "True"
 
 
 class Whiskey(commands.Bot):
+    session: aiohttp.ClientSession
+
     def __init__(self, **kwargs) -> None:
         super().__init__(
             command_prefix=commands.when_mentioned_or("?"),
@@ -61,7 +65,6 @@ class Whiskey(commands.Bot):
                 await self.load_extension(cog)
             except Exception:
                 traceback.print_exc()
-        await self.init_whiskey()
 
     async def init_whiskey(self) -> None:
         await Tortoise.init(self.config.TORTOISE)
@@ -120,6 +123,7 @@ async def main() -> None:
     ) as session:
         async with bot:
             bot.session = session
+            await bot.init_whiskey()
             await bot.start(config.DISCORD_TOKEN)
 
 
