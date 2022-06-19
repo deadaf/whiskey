@@ -61,7 +61,6 @@ class Whiskey(commands.Bot):
                 await self.load_extension(cog)
             except Exception:
                 traceback.print_exc()
-        await self.init_whiskey()
 
     async def init_whiskey(self) -> None:
         await Tortoise.init(self.config.TORTOISE)
@@ -120,6 +119,7 @@ async def main() -> None:
     ) as session:
         async with bot:
             bot.session = session
+            await bot.init_whiskey()
             await bot.start(config.DISCORD_TOKEN)
 
 
