@@ -15,13 +15,12 @@ from discord.ext import commands
 from models import ResponseData, Response
 
 import discord
-from constants import COLOR, DEADSHOT, GENERAL
+from constants import COLOR, DEADSHOT, GENERAL, HEAD_GUILD
 
 from contextlib import suppress
 from unicodedata import normalize
 import random
 from .utils import response_ignore_check
-from ..constants import HEAD_GUILD
 
 
 class WhiskeyEvents(commands.Cog):

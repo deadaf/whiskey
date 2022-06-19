@@ -3,7 +3,7 @@ from __future__ import annotations
 import typing
 import unicodedata
 
-from constants import COLOR, NOTICEBOARD
+from constants import COLOR, NOTICEBOARD, HEAD_GUILD
 
 if typing.TYPE_CHECKING:
     from bot import Whiskey
@@ -18,7 +18,6 @@ from .views import SelfRoles
 from .utils import fuzzy
 
 from discord.ext import commands
-from ..constants import HEAD_GUILD
 
 
 # https://github.com/Rapptz/RoboDanny/blob/rewrite/cogs/api.py
