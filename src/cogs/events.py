@@ -28,11 +28,6 @@ class WhiskeyEvents(commands.Cog):
         self.bot = bot
         self.reactions = ("\N{THUMBS UP SIGN}", "\N{THUMBS DOWN SIGN}")
 
-    async def cog_load(self) -> None:
-        await self.bot.wait_until_ready()
-        async for record in Response.all():
-            [self.bot.support_channels.add(channel_id) for channel_id in record.valid_channel_ids]
-
     @commands.Cog.listener(name="on_message")
     async def on_smart_response(self, message: discord.Message) -> None:
         if not message.guild or message.author.bot or not message.content:

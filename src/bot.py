@@ -17,6 +17,8 @@ from discord.ext.commands.errors import (
     CommandNotFound,
 )
 
+from models import Response
+
 
 os.environ["JISHAKU_HIDE"] = "True"
 os.environ["JISHAKU_NO_UNDERSCORE"] = "True"
@@ -64,11 +66,15 @@ class Whiskey(commands.Bot):
         await self.init_whiskey()
 
     async def init_whiskey(self) -> None:
+        self.session = aiohttp.ClientSession()
         await Tortoise.init(self.config.TORTOISE)
         await Tortoise.generate_schemas(safe=True)
 
         for mname, model in Tortoise.apps.get("models").items():
             model.bot = self
+
+        async for record in Response.all():
+            [self.support_channels.add(channel_id) for channel_id in record.valid_channel_ids]
 
     async def on_ready(self) -> None:
         if not self.persistent_views_added:
@@ -111,17 +117,10 @@ class Whiskey(commands.Bot):
             return await ctx.send(error)
 
 
-bot = Whiskey()
 
-
-async def main() -> None:
-    async with aiohttp.ClientSession(
-        connector=aiohttp.TCPConnector(resolver=aiohttp.AsyncResolver(), family=socket.AF_INET)
-    ) as session:
-        async with bot:
-            bot.session = session
-            await bot.start(config.DISCORD_TOKEN)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    bot = Whiskey()
+    bot.run(config.DISCORD_TOKEN)
+
