@@ -15,7 +15,7 @@ from discord.ext import commands
 from models import ResponseData, Response
 
 import discord
-from constants import COLOR
+from constants import COLOR, DEADSHOT, GENERAL, HEAD_GUILD
 
 from contextlib import suppress
 from unicodedata import normalize
@@ -33,7 +33,7 @@ class WhiskeyEvents(commands.Cog):
         if not message.guild or message.author.bot or not message.content:
             return
 
-        if not message.channel.id in self.bot.support_channels:
+        if message.channel.id not in self.bot.support_channels:
             return
 
         channel_id = message.channel.id
@@ -99,7 +99,7 @@ class WhiskeyEvents(commands.Cog):
             "Bhai {}, daru laya hai?",
             "Bhai {} tu aagya, bahot acha laga.",
         ]
-        c = self.bot.get_channel(829945755644592168)
+        c = self.bot.get_channel(GENERAL)
         if c is not None:
             await c.send(random.choice(_list).format(member.mention))
 
@@ -107,17 +107,18 @@ class WhiskeyEvents(commands.Cog):
         _n = normalize("NFKC", member.display_name).encode("ascii", "ignore").decode()
         _n = re.sub(r"[^a-zA-Z']+", " ", _n)
 
-        _n = "imposter" if _n.lower() == "deadshot" and not member.id == 548163406537162782 else _n
+        _n = "imposter" if _n.lower() == "deadshot" and member.id != DEADSHOT else _n
+
 
         if _n == member.name:
             return
 
         with suppress(discord.HTTPException):
-            return await member.edit(nick=_n if _n else "bad_nick")
+            return await member.edit(nick=_n or "bad_nick")
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member) -> None:
-        if member.guild.id != 746337818388987967:
+        if member.guild.id != HEAD_GUILD:
             return
         if member.id == 731007992920539259:
             return
@@ -127,14 +128,14 @@ class WhiskeyEvents(commands.Cog):
     @commands.Cog.listener(name="on_message")
     async def on_ganda_message(self, message: discord.Message) -> None:
 
-        if message.guild and (message.guild.id != 746337818388987967 or message.author.bot):
+        if message.guild and (message.guild.id != HEAD_GUILD or message.author.bot):
             return
 
         await self.clean_name(message.author)
 
     @commands.Cog.listener()
     async def on_guild_member_update(self, before: discord.Member, after: discord.Member) -> None:
-        if before.guild.id != 746337818388987967:
+        if before.guild.id != HEAD_GUILD:
             return
 
         if before.display_name != after.display_name:
